@@ -15,6 +15,17 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+// Ensure MongoDB is connected before processing requests (critical for serverless / Vercel)
+app.use(async (req, res, next) => {
+  try {
+    await connectDB();
+    next();
+  } catch (err) {
+    console.error('Database connection error:', err.message);
+    res.status(500).json({ error: 'Database connection failed', details: err.message });
+  }
+});
+
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', time: new Date().toISOString() });
 });
@@ -24,10 +35,7 @@ app.use('/api/subjects', identifyUser, subjectRoutes);
 app.use('/api/plan', identifyUser, planRoutes);
 app.use('/api/tasks', identifyUser, taskRoutes);
 
-// Optional: serve the built frontend (frontend/dist copied into ./public)
-// so backend + frontend can deploy as a single Render/Railway service.
-// In local dev, just skip this and run the Vite dev server separately —
-// see the top-level README for both workflows.
+// Optional: serve static frontend if built into ./public
 const publicDir = path.join(__dirname, 'public');
 if (fs.existsSync(publicDir)) {
   app.use(express.static(publicDir));
@@ -42,8 +50,16 @@ app.use((err, req, res, next) => {
   res.status(500).json({ error: 'Something went wrong', details: err.message });
 });
 
-const PORT = process.env.PORT || 5000;
+// Run server listener in local / persistent container mode
+if (!process.env.VERCEL) {
+  const PORT = process.env.PORT || 5001;
+  connectDB()
+    .then(() => {
+      app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+    })
+    .catch(err => {
+      console.error('Initial DB connect error:', err.message);
+    });
+}
 
-connectDB().then(() => {
-  app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
-});
+module.exports = app;
