@@ -114,3 +114,25 @@ exports.getMe = async (req, res, next) => {
     next(err);
   }
 };
+
+exports.createGuestSession = async (req, res, next) => {
+  try {
+    const guestId = `guest_${crypto.randomUUID()}`;
+    const token = jwt.sign(
+      { userId: guestId, isGuest: true, name: 'Guest Student' },
+      JWT_SECRET,
+      { expiresIn: '7d' }
+    );
+    res.status(201).json({
+      token,
+      user: {
+        userId: guestId,
+        name: 'Guest Student',
+        email: null,
+        isGuest: true
+      }
+    });
+  } catch (err) {
+    next(err);
+  }
+};

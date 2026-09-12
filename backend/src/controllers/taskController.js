@@ -1,6 +1,7 @@
 const Task = require('../models/Task');
-const Subject = require('../models/Subject');
+const Concept = require('../models/Concept');
 const StudyPlan = require('../models/StudyPlan');
+const { updateProgress } = require('../services/progressService');
 const { redistributeMissedTask } = require('../services/adaptiveEngine');
 
 // POST /api/tasks/:id/complete   { feedback?: 'easy' | 'normal' | 'difficult' }
@@ -16,42 +17,25 @@ exports.completeTask = async (req, res, next) => {
       return res.json({ task });
     }
 
-    const subject = await Subject.findOne({ _id: task.subjectId, userId: req.userId });
-    let updatedTopic = null;
+    const feedback = req.body.feedback || 'normal';
 
-    if (subject) {
-      const topic = subject.topics.find((t) => t.name === task.topic);
-      if (topic) {
-        const feedback = req.body.feedback || 'normal';
-
-        if (task.type === 'LEARN') {
-          topic.status = 'learned';
-          topic.lastStudiedDate = new Date();
-          topic.reviewStage = 0;
-          topic.revisionCount = 0;
-        } else if (task.type === 'REVISE' || task.type === 'MOCK_TEST') {
-          topic.lastStudiedDate = new Date();
-          topic.revisionCount = (topic.revisionCount || 0) + 1;
-
-          // 'difficult' -> review again soon (don't advance the stage)
-          // 'normal'    -> advance one stage
-          // 'easy'      -> skip ahead two stages
-          let stageChange = 1;
-          if (feedback === 'difficult') stageChange = 0;
-          if (feedback === 'easy') stageChange = 2;
-          topic.reviewStage = Math.min((topic.reviewStage || 0) + stageChange, 3);
-
-          topic.status = 'needs_revision';
-          if (topic.revisionCount >= 3 && topic.reviewStage >= 3) {
-            topic.status = 'mastered';
-          }
-        }
-        updatedTopic = topic;
-        await subject.save();
-      }
+    // Resolve conceptId from task or by topic name
+    let conceptId = task.conceptId;
+    if (!conceptId && task.topic) {
+      const c = await Concept.findOne({ name: task.topic });
+      if (c) conceptId = c._id;
     }
 
-    res.json({ task, updatedTopic });
+    // Single source of truth: progressService handles all StudentProgress writes
+    let updatedProgress = null;
+    if (conceptId) {
+      updatedProgress = await updateProgress(req.userId, conceptId, {
+        taskType: task.type,
+        feedback
+      });
+    }
+
+    res.json({ task, updatedProgress });
   } catch (err) {
     next(err);
   }
@@ -70,19 +54,24 @@ exports.missTask = async (req, res, next) => {
     const plan = await StudyPlan.findOne({ userId: req.userId }).sort({ createdAt: -1 });
     const dailyCapacityMinutes = plan ? plan.dailyCapacityMinutes : 120;
 
-    const impacted = await redistributeMissedTask({
+    const redistribution = await redistributeMissedTask({
       userId: req.userId,
       planId: task.planId,
       missedTask: task,
       dailyCapacityMinutes
     });
 
+    const impacted = redistribution.impacted || (Array.isArray(redistribution) ? redistribution : []);
+    const postponed = redistribution.postponed || [];
+    const message = redistribution.message || (impacted.length
+      ? `No worries — this session has been rebalanced across the next ${impacted.length} day(s).`
+      : 'Marked as missed. No spare capacity in the next few days to reschedule it automatically.');
+
     res.json({
-      message: impacted.length
-        ? `No worries — this session has been rebalanced across the next ${impacted.length} day(s).`
-        : 'Marked as missed. No spare capacity in the next few days to reschedule it automatically.',
+      message,
       missedTask: task,
-      impacted
+      impacted,
+      postponed
     });
   } catch (err) {
     next(err);

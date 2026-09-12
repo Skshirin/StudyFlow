@@ -21,26 +21,25 @@ module.exports = async function identifyUser(req, res, next) {
       }
     }
 
-    // 2. Fallback to x-user-id header (guest / legacy mode)
-    if (!userId) {
-      userId = req.header('x-user-id');
-    }
-
+    // 2. Unauthenticated check
     if (!userId) {
       return res.status(401).json({
-        error: 'Authentication required. Please log in or provide an x-user-id header.'
+        error: 'Authentication required. Please log in or continue as guest.'
       });
     }
 
     req.userId = userId;
     req.user = authUser;
+    req.isGuest = Boolean(authUser?.isGuest || (typeof userId === 'string' && userId.startsWith('guest_')));
 
-    // Update lastSeen asynchronously without blocking request
-    User.findOneAndUpdate(
-      { userId },
-      { userId, lastSeen: new Date() },
-      { upsert: true, setDefaultsOnInsert: true }
-    ).catch(err => console.error('Failed to update user lastSeen:', err.message));
+    // Only registered users get lastSeen updated in User collection
+    if (!req.isGuest) {
+      User.findOneAndUpdate(
+        { userId },
+        { userId, lastSeen: new Date() },
+        { upsert: true, setDefaultsOnInsert: true }
+      ).catch(err => console.error('Failed to update user lastSeen:', err.message));
+    }
 
     next();
   } catch (err) {

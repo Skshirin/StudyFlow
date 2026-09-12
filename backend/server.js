@@ -10,6 +10,7 @@ const authRoutes = require('./src/routes/authRoutes');
 const subjectRoutes = require('./src/routes/subjectRoutes');
 const planRoutes = require('./src/routes/planRoutes');
 const taskRoutes = require('./src/routes/taskRoutes');
+const askAiRoutes = require('./src/routes/askAiRoutes');
 
 const app = express();
 app.use(cors());
@@ -34,6 +35,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/subjects', identifyUser, subjectRoutes);
 app.use('/api/plan', identifyUser, planRoutes);
 app.use('/api/tasks', identifyUser, taskRoutes);
+app.use('/api/ask-ai', identifyUser, askAiRoutes);
 
 // Optional: serve static frontend if built into ./public
 const publicDir = path.join(__dirname, 'public');
