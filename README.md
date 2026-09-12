@@ -63,14 +63,25 @@ slightly less clean.)
 - Deploy `frontend/` to Render/Vercel/Netlify as a static site, with
   `VITE_API_BASE_URL` set to your backend's deployed URL + `/api`.
 
+## V2.0 Architecture Highlights
+
+StudyFlow V2.0 introduces an end-to-end, syllabus-driven study planner modeled on real university curricula:
+1. **Shared Syllabus Catalog**: Global `Subject` → `Module` → `Concept` catalog (seeded from Mumbai University CE Sem VII: `CSC701`, `CSC702`, `CSDC7013`, `CSDC7022`), separated from per-student progress (`StudentSubject`, `StudentProgress`).
+2. **Three Strategic Goals**: `PASS` (high-yield concepts & essentials only), `SCORE_WELL` (broad coverage + revision), and `FULL_PREPARATION` (full syllabus).
+3. **Feasibility Engine**: Mathematically assesses required vs available time prior to generation (`ON_TRACK`, `TIGHT`, `AT_RISK`, `EMERGENCY`). In emergency mode, prunes low-yield concepts and returns an explicit shortage message.
+4. **Adaptive Spaced Repetition**: Exam-deadline aware intervals that accelerate/collapse as exams approach rather than dropping revisions.
+5. **Strict AI Boundary & Zero-AI Fallback**: The AI parser converts free text into a strict schema validated against MongoDB in application code (no hallucinations, no AI schedule editing). If AI is unconfigured or returns unknown, a manual fallback modal allows direct structured plan generation.
+
+## Seed the Mumbai University Syllabus (Backend)
+```bash
+cd backend
+npm run seed:syllabus
+```
+
 ## What's real vs. what's a known simplification
 
-Everything in the frontend calls the real backend — there is no mock data
-left in the project. A few honest simplifications, also noted in
-`backend/README.md`:
-- No login/password — a client-generated UUID (`x-user-id` header) stands in
-  for auth. Good enough for a demo, swappable for real auth later.
-- Rebalanced tasks (from a missed session) don't get a fixed clock time —
-  they show as "Added" rather than resequencing the whole day.
-- Cycling a topic's status by hand in the Subjects screen is a manual
-  override; the "real" way status changes is by completing a scheduled task.
+Everything in the frontend calls the real backend — there is zero mock data. A few honest simplifications:
+- **Client Identity**: Uses a client-generated UUID (`x-user-id` header) or JWT token. Intentionally prioritized scheduling logic depth over authentication ceremony.
+- **Clock Resequencing**: Rebalanced tasks (from missed sessions or workload cuts) receive `startTime: null` ("Added today" / "Rebalanced") rather than dynamically recalculating full 24-hour clock timelines.
+- **LLM Boundary**: The LLM only parses natural language to a JSON intent. The application code handles 100% of syllabus validation and scheduling. When LLM keys are unset, manual fallback forms bypass AI entirely.
+- **Move Subject Target Day Capacity**: `MOVE_SUBJECT` shifts sessions to tomorrow or a target date without re-running the full daily capacity check for that target day.

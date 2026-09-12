@@ -8,161 +8,166 @@ hurting my exam prep"). This keeps the product fast, free to run, and fully
 explainable — every decision the planner makes can be traced back to a number,
 not a black-box model call.
 
-## Why this architecture
+## Why this architectu## Architecture & Core Philosophy (V2.0 Syllabus-Aware)
 
 ```
-                STUDENT INPUT (subjects, topics, exam dates, daily capacity)
-                                     │
-                                     ▼
-                     ┌───────────────────────────┐
-                     │   SCHEDULING ENGINE        │   <- 100% deterministic
-                     │   (schedulingEngine.js)     │
-                     │                             │
-                     │  Priority Score =           │
-                     │   0.40 × examUrgency         │
-                     │  +0.20 × difficulty          │
-                     │  +0.25 × weakness            │
-                     │  +0.15 × remainingWork       │
-                     │                             │
-                     │  + spaced repetition due-check│
-                     │  + energy-adjusted capacity   │
-                     │  + break blocks               │
-                     └──────────────┬──────────────┘
+                 STUDENT INPUT / GOAL (PASS, SCORE_WELL, FULL_PREPARATION)
+                                      │
+                                      ▼
+                      ┌───────────────────────────┐
+                      │   FEASIBILITY ENGINE      │   <- Mathematical pre-check
+                      │   (feasibilityEngine.js)  │
+                      │                           │
+                      │ Required vs Available Time│
+                      │ States:                   │
+                      │ - ON_TRACK   (req <= 80%) │
+                      │ - TIGHT      (80-105%)    │
+                      │ - AT_RISK    (105-130%)   │
+                      │ - EMERGENCY  (>130% or    │
+                      │   <=2 days to exam)       │
+                      └─────────────┬─────────────┘
+                                    │
+                         Emergency? │ No / Pruned
                                     ▼
-                              STUDY PLAN (Tasks)
+                      ┌───────────────────────────┐
+                      │   SCHEDULING ENGINE       │   <- 100% deterministic
+                      │   (schedulingEngine.js)   │
+                      │                           │
+                      │ Priority Score =          │
+                      │  0.25 × examUrgency       │
+                      │ +0.20 × examRelevance     │
+                      │ +0.20 × importance        │
+                      │ +0.20 × weakness          │
+                      │ +0.15 × remainingWork     │
+                      │  × goalWeight Multiplier  │
+                      │                           │
+                      │ + concept study minutes   │
+                      │ + adaptive spaced-rep     │
+                      │   (exam deadline clamped) │
+                      │ + energy capacity scale   │
+                      └─────────────┬─────────────┘
+                                    ▼
+                             STUDY PLAN (Tasks)
                                     │
                  ┌──────────────────┴──────────────────┐
-                 ▼                                      ▼
-            COMPLETED                                 MISSED
-                 │                                      │
-     updates spaced-repetition state          ┌─────────────────────┐
-     (schedulingEngine intervals)             │  ADAPTIVE ENGINE     │  <- deterministic
-                                               │ (adaptiveEngine.js)  │
-                                               │ redistributes minutes│
-                                               │ across next N days,  │
-                                               │ respecting capacity  │
-                                               └──────────┬───────────┘
-                                                           ▼
-                                                    UPDATED PLAN
+                 ▼                                     ▼
+            COMPLETED                                MISSED
+                 │                                     │
+      updates StudentProgress                ┌──────────────────┐
+      reviewStage, lastStudiedAt,            │ ADAPTIVE ENGINE  │ <- priority-aware
+      revisionCount & status                 │(adaptiveEngine.js│
+                                             │- hard exam bounds│
+                                             │- re-scores score │
+                                             │- displaces lower │
+                                             │  priority tasks  │
+                                             └────────┬─────────┘
+                                                      ▼
+                                                UPDATED PLAN
 
-        Free-text tweak: "I'm tired today" / "move Math to tomorrow"
+        Natural language: "I only have 2h today" / "I'm weak in Syntax Analysis"
                                     │
                                     ▼
-                     ┌───────────────────────────┐
-                     │  RULE-BASED INTENT PARSER  │   <- tried first, free, instant
-                     │   (intentParser.js)        │
-                     └──────────────┬─────────────┘
-                          matched? │ no match
-                          │        ▼
-                          │  ┌─────────────────────┐
-                          │  │  AI FALLBACK (Groq)  │   <- only for unstructured text
-                          │  │  (groqService.js)    │
-                          │  └──────────┬───────────┘
+                     ┌─────────────────────────────┐
+                     │  RULE-BASED INTENT PARSER   │  <- deterministic regex, free, instant
+                     │   (intentParser.js)         │
+                     └──────────────┬──────────────┘
+                          matched?  │ no match
+                          │         ▼
+                          │  ┌───────────────────────┐
+                          │  │  AI FALLBACK LAYER    │  <- Gemini / Groq LLM
+                          │  │ (gemini / groqService)│
+                          │  └──────────┬────────────┘
                           ▼             ▼
-                     structured intent { intent, params }
+                     Strict JSON Schema Payload
                                     │
                                     ▼
-                 Deterministic code applies the change
-                 (scheduling/adaptive engine — AI never
-                  edits the plan directly)
+                     ┌─────────────────────────────┐
+                     │   STRICT INTENT VALIDATOR   │  <- Application-level gatekeeper
+                     │   (intentValidator.js)      │  <- Validates against real DB collections
+                     └──────────────┬──────────────┘
+                          valid?    │ invalid / unknown topic / no AI keys
+                          │         ▼
+                          │  Graceful Manual Fallback Modal
+                          │  (bypasses AI entirely with structured inputs)
+                          ▼
+                 Deterministic Controller Execution
+                 (AI never touches schedules directly)
 ```
 
-**The key interview talking point:** AI interprets messy language into a
-strict schema; the application (not the model) decides what actually happens
-to the plan. This is cheaper, faster, and impossible for the AI to get
-"creatively wrong" in a way that corrupts your data.
+**The key interview talking point:** The AI's *only* job is converting unstructured language into a strict JSON schema. Application code validates every subject, module, and concept against the live catalog in MongoDB before executing. Scheduling, feasibility, and adaptive replanning are 100% deterministic code. Even with zero AI keys configured, the entire application generates and adapts plans seamlessly.
 
-## Features implemented
+---
 
-- **Priority formula** with exam urgency, difficulty, weakness (derived from a
-  student-given confidence score), and remaining-syllabus weighting — all
-  normalized so no single factor dominates.
-- **Deterministic "Why today?" reasoning** on every task (e.g. *"Exam in 4
-  days • weak topic • not reviewed in 6 days"*) — generated from the same
-  numbers used to rank it. No AI call needed for this.
-- **Simplified spaced repetition** (1 → 3 → 7 → 14 day intervals), adjusted by
-  student self-reported feedback (easy / normal / difficult) after completing
-  a revision.
-- **Energy-aware capacity**: a student can log today as high/normal/low
-  energy; the day's total available minutes scale accordingly (this is where
-  you'd wire "schedule hard topics for high-energy days" in a v2).
-- **Task types**: `LEARN`, `PRACTICE` (reserved for future granularity),
-  `REVISE`, `MOCK_TEST`, `REVIEW_MISTAKES` (reserved), `BREAK`.
-- **Adaptive replanning**: missing a task redistributes its minutes across the
-  next few days without violating each day's capacity.
-- **Plan Health** traffic light (🟢/🟡/🔴): remaining required study time vs.
-  time available before the nearest exam — a single deterministic number.
-- **No login system.** The frontend generates a UUID once (client-side,
-  `crypto.randomUUID()`), stores it in `localStorage`, and sends it as an
-  `x-user-id` header. This intentionally trades "real auth" for spending that
-  time on the scheduler instead — the part of the brief that actually matters.
-- **AI used sparingly, not "once per day."** It only fires when the rule-based
-  intent parser can't classify a free-text plan-adjustment request.
+## Features Implemented (V2.0)
 
-## Data model
+- **Centralized Mumbai University Syllabus Catalog**: Seeded from official CE Semester VII curriculum (`CSC701`, `CSC702`, `CSDC7013`, `CSDC7022`) across 24 modules and 49 concepts with importance, difficulty, exam relevance, and study minutes.
+- **Three Strategic Study Goals**:
+  - `PASS`: Prioritizes high examRelevance and importance concepts, weak areas first, and essential prerequisites. Skips low-value concepts if time doesn't allow.
+  - `SCORE_WELL`: Broader coverage across high and medium importance concepts with revision and practice sessions layered in.
+  - `FULL_PREPARATION`: Comprehensive syllabus coverage subject to mathematical feasibility verification.
+- **Feasibility Engine**: Mathematically evaluates required study minutes against available runway before generating a plan. If in `EMERGENCY`, prunes low-yield concepts, prioritizes high-yield topics, and returns an explicit shortage message without silent truncation.
+- **Adaptive Spaced-Repetition**: Spaced repetition intervals (`[1, 3, 7, 14]`) respect the student's `examDate`. Intervals are pulled earlier or collapsed as the exam approaches rather than silently skipping revisions.
+- **Priority-Aware Missed-Session Recalculation**: Missing a session never schedules work past the exam date. It recalculates priority scores under the shortened runway and displaces lower-priority tasks or explicitly postpones work if runway is exhausted.
+- **Zero-AI & Manual Fallback**: When natural-language requests return `UNKNOWN` or when AI API keys are unconfigured, the UI presents a structured manual form (`Subject`, `Goal`, `Days`, `Hours/day`) that executes directly.
 
+---
+
+## Data Model (V2.0 Shared Syllabus Architecture)
+
+### Shared Syllabus Catalog (Global / University)
+One single set of documents for all students; never duplicated per user.
 ```
-Subject { userId, name, examDate?, difficulty(1-5), confidence(1-5),
-          topics: [{ name, status, lastStudiedDate, reviewStage, revisionCount }] }
-
-StudyPlan { userId, startDate, endDate, dailyCapacityMinutes, timePreference }
-
-Task { userId, planId, subjectId?, subjectName?, topic, date, startTime,
-       duration, type, priorityScore, status, reason }
-
-EnergyLog { userId, date, level }
+Subject (shared) { code, name, credits, createdAt }
+Module (shared)  { subjectId, name, order, hours, createdAt }
+Concept (shared) { moduleId, name, description, importance (1-3), difficulty (1-3),
+                   examRelevance (1-3), estimatedStudyMinutes, order, createdAt }
+Resource (shared){ conceptId, title, type: 'video'|'notes'|'practice'|'article'|'other' }
 ```
 
-## API reference
+### Per-Student Layer (Personalized Progress & Plan)
+```
+StudentSubject  { userId, subjectId, examDate?, confidence (1-5),
+                  targetGoal: 'PASS'|'SCORE_WELL'|'FULL_PREPARATION', availableHours, createdAt }
 
-All routes below require an `x-user-id: <uuid>` header.
+StudentProgress { userId, conceptId, status: 'not_started'|'in_progress'|'completed'|'needs_revision'|'mastered',
+                  completionPercentage (0-100), confidence (1-5), lastStudiedAt?,
+                  reviewStage (0-3), revisionCount, timestamps }
+
+StudyPlan       { userId, startDate, endDate, dailyCapacityMinutes, timePreference, targetGoal }
+
+Task            { userId, planId, subjectId?, subjectName?, topic, date, startTime,
+                  duration, type, priorityScore, status, reason, timestamps }
+
+EnergyLog       { userId, date, level }
+```
+
+---
+
+## API Reference
+
+All routes below require an `x-user-id: <uuid>` header (or standard JWT `Bearer` token).
 
 | Method | Route                  | Body / Params                                   | Purpose |
 |--------|------------------------|--------------------------------------------------|---------|
-| GET    | `/api/health`          | —                                                  | Server healthcheck (no `x-user-id` needed) |
-| POST   | `/api/subjects`        | `{ name, examDate?, difficulty?, confidence?, topics: [string] }` | Add a subject |
-| GET    | `/api/subjects`        | —                                                  | List subjects |
-| PUT    | `/api/subjects/:id`    | `{ name?, examDate?, difficulty?, confidence?, addTopics?: [string] }` | Update a subject |
-| DELETE | `/api/subjects/:id`    | —                                                  | Remove a subject |
-| POST   | `/api/plan/generate`   | `{ dailyCapacityMinutes, timePreference?, days? }` | Generate the full plan (Tasks) |
-| GET    | `/api/plan/today`      | —                                                  | Today's tasks + Plan Health |
-| GET    | `/api/plan/health`     | —                                                  | Plan Health only |
-| POST   | `/api/plan/energy`     | `{ date, level: 'high'|'normal'|'low' }`           | Log today's energy |
-| POST   | `/api/plan/adjust`     | `{ text: "I'm tired today" }`                      | Free-text plan adjustment |
-| GET    | `/api/plan/:date`      | `date = YYYY-MM-DD`                                | Tasks for a specific day |
-| POST   | `/api/tasks/:id/complete` | `{ feedback?: 'easy'|'normal'|'difficult' }`    | Mark a task done, update spaced-rep state |
-| POST   | `/api/tasks/:id/miss`  | —                                                  | Mark a task missed, triggers adaptive replanning |
+| GET    | `/api/health`          | —                                                  | Server healthcheck |
+| GET    | `/api/subjects`        | —                                                  | List enrolled student subjects with module/concept progress |
+| POST   | `/api/subjects`        | `{ subjectId, examDate?, targetGoal?, confidence? }` | Enroll student in a shared syllabus subject |
+| PUT    | `/api/subjects/:id`    | `{ examDate?, targetGoal?, confidence? }`          | Update subject enrollment preferences |
+| DELETE | `/api/subjects/:id`    | —                                                  | Drop a subject enrollment |
+| POST   | `/api/plan/generate`   | `{ dailyCapacityMinutes, days?, targetGoal?, subjectId? }` | Run Feasibility & Generate full plan tasks |
+| GET    | `/api/plan/today`      | —                                                  | Today's tasks with importance/examRelevance badges + Plan Health |
+| POST   | `/api/plan/adjust`     | `{ text: "I only have 2 hours today" }`            | Natural-language adjustment with validation & fallback |
+| GET    | `/api/plan/:date`      | `date = YYYY-MM-DD`                                | Tasks for a specific date |
+| POST   | `/api/tasks/:id/complete` | `{ feedback?: 'easy'|'normal'|'difficult' }`    | Complete task, advance reviewStage & StudentProgress |
+| POST   | `/api/tasks/:id/miss`  | —                                                  | Priority-aware missed-task recalculation |
 
-## Setup
+---
 
-```bash
-npm install
-cp .env.example .env      # then fill in MONGO_URI (GROQ_API_KEY is optional)
-npm run dev                # nodemon, or `npm start` for plain node
-```
+## Known Limitations / Honest Next Steps (Interview Discussion Points)
 
-## Deploying for free
-
-1. **Database**: create a free MongoDB Atlas cluster, add a database user,
-   whitelist `0.0.0.0/0` (or your host's IPs), copy the connection string into
-   `MONGO_URI`.
-2. **Backend host**: push this repo to GitHub, then create a new Web Service
-   on Render (or Railway) pointing at it. Build command: `npm install`. Start
-   command: `npm start`. Add `MONGO_URI` (and optionally `GROQ_API_KEY`) as
-   environment variables in the dashboard.
-3. **AI (optional)**: create a free Groq API key at console.groq.com and set
-   `GROQ_API_KEY` — the app works fine without it, just with a smaller set of
-   understood phrasings for plan adjustments.
-
-## Known limitations / honest next steps
-
-- `MOVE_SUBJECT` moves a task to a new date without re-checking that day's
-  capacity — a good v2 improvement (reflow the target day too).
-- Rebalanced tasks from `missTask`/`BLOCK_TODAY` get `startTime: null` (shown
-  as "added today" rather than a fixed slot) since resequencing a whole day's
-  clock times on every change adds complexity beyond this task's scope.
-- `AVG_MINUTES_PER_TOPIC` (90 min) in Plan Health is a flat estimate rather
-  than per-subject/difficulty-aware — simple on purpose, easy to justify and
-  easy to improve later.
-- No password auth by design (see Data model section) — swappable for
-  JWT/Google login later without touching the scheduling logic at all.
+1. **Rebalanced Tasks Lack Fixed Time Slots**: Tasks redistributed due to missed sessions or workload reductions receive `startTime: null` (displaying as "Added today" / "Rebalanced") rather than resequencing the entire day's clock schedule. Resequencing clocks dynamically would require full timeline reflow.
+2. **Move Subject Date Collision Check**: `MOVE_SUBJECT` shifts sessions to tomorrow or a target date without re-running the full daily capacity check for that target day. A production engine should reflow the destination day.
+3. **Single Active Goal per Subject**: A student configures one goal (`PASS`, `SCORE_WELL`, `FULL_PREPARATION`) per subject at a time. Multi-goal split plans (e.g. "pass Module 1, score well on Module 2") are not modeled.
+4. **Auth Model**: Default client identity uses a client-generated UUID via `x-user-id` header (though JWT token auth middleware is also supported). This intentionally prioritized scheduling algorithm depth over auth boilerplate for the demo.
+5. **LLM Context Boundary**: The LLM prompt receives subject names and user requests but never whole curriculum graphs; validation happens deterministically in Node.js against MongoDB. If a student uses colloquial slang not in the rule parser, it gracefully falls back to the manual input form.
+6. **Task Resequencing**: `AVG_MINUTES_PER_TOPIC` (90 min) in legacy Plan Health is superseded by exact `Concept.estimatedStudyMinutes` in V2.0, but legacy fallback routes still utilize the baseline approximation when non-syllabus subjects are encountered.

@@ -25,3 +25,5 @@ frontend/.vite/
 .cache/
 .DS_Store
 Thumbs.db
+.vscode/
+
