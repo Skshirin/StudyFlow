@@ -3,9 +3,13 @@
 // (Subject/Session, dash-cased enums like 'not-started', 'mock-test').
 // This is the ONLY place that needs to know both shapes.
 
-import { Subject, Session, SessionType, SessionStatus, TopicStatus } from '../types'
+import { Subject, Session, SessionType, SessionStatus, TopicStatus, Module, Concept, ConceptStatus } from '../types'
 
 const EMOJI_MAP: Record<string, string> = {
+  'machine learning': '🤖', ml: '🤖',
+  'big data': '🐘', hadoop: '🐘', bda: '🐘',
+  'natural language': '💬', nlp: '💬',
+  blockchain: '⛓️', crypto: '⛓️',
   math: '📐', mathematics: '📐',
   'computer science': '💻', cs: '💻', dsa: '💻',
   physics: '⚛️', chemistry: '🧪', biology: '🧬',
@@ -49,18 +53,55 @@ const TASK_STATUS_MAP: Record<string, SessionStatus> = {
   skipped: 'skipped',
 }
 
-/** Backend Subject doc -> frontend Subject (adds display-only emoji/color). */
+/** Backend Subject doc -> frontend Subject (adds display-only emoji/color, modules & concepts). */
 export function mapBackendSubject(subject: any, index: number): Subject {
+  const modules: Module[] = (subject.modules || []).map((m: any) => ({
+    id: m._id,
+    name: m.name,
+    order: m.order,
+    hours: m.hours,
+    concepts: (m.concepts || []).map((c: any): Concept => ({
+      id: c._id,
+      name: c.name,
+      order: c.order,
+      importance: c.importance || 2,
+      examRelevance: c.examRelevance || 2,
+      difficulty: c.difficulty || 3,
+      estimatedStudyMinutes: c.estimatedStudyMinutes || 45,
+      description: c.description || '',
+      resources: c.resources || [],
+      status: (c.status as ConceptStatus) || 'not_started',
+      reviewStage: c.reviewStage || 0,
+    })),
+  }))
+
+  // Count concepts if not provided directly
+  let totalConcepts = subject.totalConcepts
+  let completedConcepts = subject.completedConcepts
+  if (totalConcepts === undefined) {
+    totalConcepts = modules.reduce((acc, m) => acc + m.concepts.length, 0)
+  }
+  if (completedConcepts === undefined) {
+    completedConcepts = modules.reduce((acc, m) => acc + m.concepts.filter(c => c.status === 'mastered').length, 0)
+  }
+
   return {
     id: subject._id,
+    code: subject.code,
     name: subject.name,
     emoji: guessEmoji(subject.name),
     color: colorForIndex(index),
+    credits: subject.credits,
     examDate: subject.examDate || null,
-    difficulty: subject.difficulty,
-    confidence: subject.confidence,
+    difficulty: subject.difficulty || 3,
+    confidence: subject.confidence || 3,
+    targetGoal: subject.targetGoal,
+    availableHours: subject.availableHours,
+    modules,
+    totalConcepts,
+    completedConcepts,
     topics: (subject.topics || []).map((t: any) => ({
-      id: t.name, // topics have no separate _id on the backend; name is the stable key
+      id: t.name,
       name: t.name,
       status: TOPIC_STATUS_MAP[t.status] || 'not-started',
     })),
@@ -78,6 +119,10 @@ export function mapBackendTask(task: any): Session {
     subjectEmoji: isBreak ? '☕' : guessEmoji(task.subjectName || ''),
     subjectColor: isBreak ? '#94A3B8' : colorForIndex(hashIndex(task.subjectName || '')),
     topic: isBreak ? '' : task.topic,
+    conceptId: task.conceptId || null,
+    importance: task.importance || null,
+    examRelevance: task.examRelevance || null,
+    difficulty: task.difficulty || null,
     type: TASK_TYPE_MAP[task.type] || 'learn',
     duration: task.duration,
     whyToday: task.reason || '',
@@ -85,9 +130,6 @@ export function mapBackendTask(task: any): Session {
   }
 }
 
-// Cheap deterministic index so a session card's color matches its Subjects-list
-// card color even though a task only carries subjectName, not the full subject
-// list with its position-based palette assignment.
 function hashIndex(name: string): number {
   let h = 0
   for (let i = 0; i < name.length; i++) h = (h * 31 + name.charCodeAt(i)) >>> 0

@@ -10,6 +10,18 @@ const typeConfig: Record<SessionType, { label: string; bg: string; text: string 
   break: { label: 'BREAK', bg: 'bg-emerald-50', text: 'text-emerald-600' },
 }
 
+const importanceConfig: Record<number, { label: string; bg: string; text: string }> = {
+  3: { label: 'HIGH IMP', bg: 'bg-amber-100', text: 'text-amber-700' },
+  2: { label: 'MED IMP', bg: 'bg-blue-100', text: 'text-blue-700' },
+  1: { label: 'LOW IMP', bg: 'bg-slate-100', text: 'text-slate-600' },
+}
+
+const examRelevanceConfig: Record<number, { label: string; bg: string; text: string }> = {
+  3: { label: 'HIGH EXAM', bg: 'bg-emerald-100', text: 'text-emerald-700' },
+  2: { label: 'MED EXAM', bg: 'bg-teal-100', text: 'text-teal-700' },
+  1: { label: 'LOW EXAM', bg: 'bg-slate-100', text: 'text-slate-600' },
+}
+
 interface SessionCardProps {
   session: Session
   onStart?: (id: string) => void
@@ -37,6 +49,12 @@ export default function SessionCard({ session, onStart, onComplete, onMissed }: 
   const isMissed = session.status === 'missed' || session.status === 'skipped'
   const isActive = session.status === 'active'
 
+  const whyText = session.whyToday || (
+    session.importance && session.examRelevance
+      ? `${session.importance === 3 ? 'High' : session.importance === 2 ? 'Medium' : 'Standard'} importance, ${session.examRelevance === 3 ? 'high' : 'medium'} exam relevance`
+      : ''
+  )
+
   return (
     <div
       className={`rounded-2xl border px-4 py-4 transition-all duration-200 session-card-enter ${
@@ -61,9 +79,21 @@ export default function SessionCard({ session, onStart, onComplete, onMissed }: 
             </p>
           </div>
         </div>
-        <span className={`text-[10px] font-bold tracking-wider px-2 py-1 rounded-full flex-shrink-0 ${tc.bg} ${tc.text}`}>
-          {tc.label}
-        </span>
+        <div className="flex flex-wrap items-center justify-end gap-1 flex-shrink-0">
+          <span className={`text-[10px] font-bold tracking-wider px-2 py-0.5 rounded-full ${tc.bg} ${tc.text}`}>
+            {tc.label}
+          </span>
+          {session.importance && importanceConfig[session.importance] && (
+            <span className={`text-[10px] font-bold tracking-wider px-2 py-0.5 rounded-full ${importanceConfig[session.importance].bg} ${importanceConfig[session.importance].text}`}>
+              {importanceConfig[session.importance].label}
+            </span>
+          )}
+          {session.examRelevance && examRelevanceConfig[session.examRelevance] && (
+            <span className={`text-[10px] font-bold tracking-wider px-2 py-0.5 rounded-full ${examRelevanceConfig[session.examRelevance].bg} ${examRelevanceConfig[session.examRelevance].text}`}>
+              {examRelevanceConfig[session.examRelevance].label}
+            </span>
+          )}
+        </div>
       </div>
 
       <div className="flex items-center justify-between mt-3">
@@ -80,7 +110,7 @@ export default function SessionCard({ session, onStart, onComplete, onMissed }: 
         )}
       </div>
 
-      {!isCompleted && !isMissed && session.whyToday && (
+      {!isCompleted && !isMissed && whyText && (
         <div className="mt-3 pt-3 border-t border-slate-100">
           <button
             onClick={() => setWhyExpanded(!whyExpanded)}
@@ -91,7 +121,7 @@ export default function SessionCard({ session, onStart, onComplete, onMissed }: 
           </button>
           {whyExpanded && (
             <p className="text-xs text-slate-500 mt-1.5 leading-relaxed fade-in">
-              {session.whyToday}
+              {whyText}
             </p>
           )}
         </div>

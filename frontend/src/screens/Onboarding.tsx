@@ -1,440 +1,293 @@
-import { useState } from 'react'
-import { Subject, TimePreference } from '../types'
-import { createSubject, generatePlan } from '../api/endpoints'
+import { useState, useEffect } from 'react'
+import { Subject, TimePreference, CatalogSubject } from '../types'
+import { fetchCatalog, enrollSubjects, generatePlan, fetchSubjects } from '../api/endpoints'
 import { mapBackendSubject } from '../api/adapters'
 
 interface OnboardingProps {
   onComplete: (subjects: Subject[], dailyMinutes: number, pref: TimePreference) => void
 }
 
-interface DraftSubject {
-  id: string
-  name: string
-  examDate: string
-  difficulty: number
-  confidence: number
-  topics: string[]
-  topicInput: string
-}
-
-const emojis: Record<string, string> = {
-  mathematics: '📐',
-  math: '📐',
-  'computer science': '💻',
-  cs: '💻',
-  physics: '⚛️',
-  chemistry: '🧪',
-  biology: '🧬',
-  history: '📜',
-  english: '📖',
-  economics: '📈',
-}
-
-const colors = ['#6366F1', '#0EA5E9', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899', '#14B8A6']
-
-function guessEmoji(name: string) {
-  const lower = name.toLowerCase()
-  for (const key of Object.keys(emojis)) {
-    if (lower.includes(key)) return emojis[key]
-  }
-  return '📚'
-}
-
-function DotPicker({ value, onChange }: { value: number; onChange: (v: number) => void }) {
-  return (
-    <div className="flex gap-1.5">
-      {[1, 2, 3, 4, 5].map(i => (
-        <button
-          key={i}
-          type="button"
-          onClick={() => onChange(i)}
-          className={`w-3 h-3 rounded-full transition-all duration-150 ${
-            i <= value ? 'bg-indigo-500 scale-110' : 'bg-slate-200 hover:bg-slate-300'
-          }`}
-        />
-      ))}
-    </div>
-  )
-}
-
-function SubjectCard({
-  subject,
-  onChange,
-  onRemove,
-}: {
-  subject: DraftSubject
-  onChange: (s: DraftSubject) => void
-  onRemove: () => void
-}) {
-  const addTopic = () => {
-    const trimmed = subject.topicInput.trim()
-    if (trimmed && !subject.topics.includes(trimmed)) {
-      onChange({ ...subject, topics: [...subject.topics, trimmed], topicInput: '' })
-    }
-  }
-
-  return (
-    <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-4">
-      <div className="flex items-center gap-2 mb-4">
-        <span className="text-xl">{guessEmoji(subject.name)}</span>
-        <input
-          value={subject.name}
-          onChange={e => onChange({ ...subject, name: e.target.value })}
-          placeholder="Subject name"
-          className="flex-1 text-sm font-semibold text-slate-800 placeholder:text-slate-300 bg-transparent outline-none border-b border-slate-200 focus:border-indigo-400 pb-1 transition-colors"
-        />
-        <button
-          onClick={onRemove}
-          className="text-slate-300 hover:text-rose-400 text-lg leading-none transition-colors ml-1"
-        >
-          ×
-        </button>
-      </div>
-
-      <div className="space-y-3">
-        <div className="flex items-center gap-3">
-          <label className="text-xs text-slate-400 w-20 flex-shrink-0">Exam date</label>
-          <input
-            type="date"
-            value={subject.examDate}
-            onChange={e => onChange({ ...subject, examDate: e.target.value })}
-            className="text-xs text-slate-600 bg-slate-50 border border-slate-200 rounded-lg px-2 py-1.5 outline-none focus:border-indigo-400 transition-colors"
-          />
-        </div>
-
-        <div className="flex items-center gap-3">
-          <label className="text-xs text-slate-400 w-20 flex-shrink-0">Difficulty</label>
-          <DotPicker value={subject.difficulty} onChange={v => onChange({ ...subject, difficulty: v })} />
-        </div>
-
-        <div className="flex items-center gap-3">
-          <label className="text-xs text-slate-400 w-20 flex-shrink-0">Confidence</label>
-          <DotPicker value={subject.confidence} onChange={v => onChange({ ...subject, confidence: v })} />
-        </div>
-
-        <div>
-          <label className="text-xs text-slate-400 block mb-2">Topics</label>
-          <div className="flex flex-wrap gap-1.5 mb-2">
-            {subject.topics.map(t => (
-              <span
-                key={t}
-                className="inline-flex items-center gap-1 text-xs bg-indigo-50 text-indigo-600 font-medium px-2.5 py-1 rounded-full"
-              >
-                {t}
-                <button
-                  type="button"
-                  onClick={() => onChange({ ...subject, topics: subject.topics.filter(x => x !== t) })}
-                  className="text-indigo-400 hover:text-indigo-700 leading-none"
-                >
-                  ×
-                </button>
-              </span>
-            ))}
-          </div>
-          <div className="flex gap-2">
-            <input
-              value={subject.topicInput}
-              onChange={e => onChange({ ...subject, topicInput: e.target.value })}
-              onKeyDown={e => e.key === 'Enter' && addTopic()}
-              placeholder="Add a topic…"
-              className="flex-1 text-xs bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 outline-none focus:border-indigo-400 transition-colors placeholder:text-slate-300"
-            />
-            <button
-              type="button"
-              onClick={addTopic}
-              className="text-xs font-semibold text-indigo-500 hover:text-indigo-700 bg-indigo-50 hover:bg-indigo-100 px-3 py-2 rounded-lg transition-colors"
-            >
-              Add
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  )
-}
-
-const timePrefOptions: { id: TimePreference; icon: string; label: string; hint: string }[] = [
-  { id: 'morning', icon: '☀️', label: 'Morning', hint: '6am – 12pm' },
-  { id: 'afternoon', icon: '🌤', label: 'Afternoon', hint: '12pm – 5pm' },
-  { id: 'evening', icon: '🌙', label: 'Evening', hint: '5pm – 10pm' },
-  { id: 'flexible', icon: '✨', label: 'Flexible', hint: 'Whenever works' },
+const DEFAULT_PROMPTS = [
+  "My exam is next week. I don't want to top, I just want to pass this subject.",
+  "Exam is in 14 days, aiming to top the class with thorough concept mastery.",
+  "Exam is in 5 days and I haven't started studying.",
+  "I'm weak in Module 3 and want to focus on it before the exam."
 ]
 
-function newDraft(): DraftSubject {
-  return { id: crypto.randomUUID(), name: '', examDate: '', difficulty: 3, confidence: 3, topics: [], topicInput: '' }
-}
-
-function ProgressDots({ step }: { step: number }) {
-  return (
-    <div className="flex gap-2 items-center justify-center">
-      {[1, 2, 3].map(i => (
-        <div
-          key={i}
-          className={`rounded-full transition-all duration-300 ${
-            i === step ? 'w-6 h-2.5 bg-indigo-500' : i < step ? 'w-2.5 h-2.5 bg-indigo-200' : 'w-2.5 h-2.5 bg-slate-200'
-          }`}
-        />
-      ))}
-    </div>
-  )
-}
-
 export default function Onboarding({ onComplete }: OnboardingProps) {
-  const [step, setStep] = useState(1)
-  const [loading, setLoading] = useState(false)
-  const [loadDone, setLoadDone] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const [subjects, setSubjects] = useState<DraftSubject[]>([
-    { id: 's1', name: 'Mathematics', examDate: '2026-09-17', difficulty: 4, confidence: 2, topics: ['Integration', 'Differentiation', 'Probability'], topicInput: '' },
-  ])
-  const [dailyMinutes, setDailyMinutes] = useState(120)
-  const [timePref, setTimePref] = useState<TimePreference>('evening')
+  const [step, setStep] = useState<1 | 2>(1)
+  const [catalog, setCatalog] = useState<CatalogSubject[]>([])
+  const [loadingCatalog, setLoadingCatalog] = useState(true)
+  const [selectedSubjectId, setSelectedSubjectId] = useState<string>('')
+  const [promptText, setPromptText] = useState<string>(DEFAULT_PROMPTS[0])
+  const [isProcessing, setIsProcessing] = useState<boolean>(false)
+  const [errorMessage, setErrorMessage] = useState<string | null>(null)
+  const [parsedPlanFeedback, setParsedPlanFeedback] = useState<string | null>(null)
 
-  const formatMinutes = (m: number) => {
-    const h = Math.floor(m / 60)
-    const min = m % 60
-    if (h === 0) return `${min} min`
-    if (min === 0) return `${h}h`
-    return `${h}h ${min}m`
-  }
+  useEffect(() => {
+    fetchCatalog()
+      .then(res => {
+        setCatalog(res)
+        if (res.length > 0) {
+          setSelectedSubjectId(res[0]._id)
+        }
+      })
+      .catch(err => {
+        setErrorMessage(err.message || 'Could not load syllabus catalog')
+      })
+      .finally(() => setLoadingCatalog(false))
+  }, [])
 
-  const nearestExam = subjects
-    .filter(s => s.examDate)
-    .map(s => ({ name: s.name, date: new Date(s.examDate) }))
-    .sort((a, b) => a.date.getTime() - b.date.getTime())[0]
+  const selectedSubject = catalog.find(c => c._id === selectedSubjectId)
 
-  const daysUntilExam = nearestExam
-    ? Math.ceil((nearestExam.date.getTime() - Date.now()) / 86400000)
-    : null
+  const handleGeneratePlan = async () => {
+    if (!selectedSubject) return
+    setIsProcessing(true)
+    setErrorMessage(null)
 
-  const handleGenerate = async () => {
-    setError(null)
-    setLoading(true)
     try {
-      const validDrafts = subjects.filter(s => s.name.trim())
-      const created: Subject[] = []
-      for (let i = 0; i < validDrafts.length; i++) {
-        const d = validDrafts[i]
-        const doc = await createSubject({
-          name: d.name.trim(),
-          examDate: d.examDate || null,
-          difficulty: d.difficulty,
-          confidence: d.confidence,
-          topics: d.topics,
-        })
-        created.push(mapBackendSubject(doc, i))
+      const lower = promptText.toLowerCase()
+      let inferredGoal: 'PASS' | 'TOP' | 'EMERGENCY' | 'SCORE_WELL' = 'SCORE_WELL'
+      if (lower.includes('just pass') || lower.includes('want to pass') || lower.includes('pass this') || lower.includes('only pass')) {
+        inferredGoal = 'PASS'
+      } else if (lower.includes('top') || lower.includes('master') || lower.includes('100%')) {
+        inferredGoal = 'TOP'
+      } else if (lower.includes('emergency') || lower.includes('haven\'t started')) {
+        inferredGoal = 'EMERGENCY'
       }
-      await generatePlan({ dailyCapacityMinutes: dailyMinutes, timePreference: timePref })
 
-      setLoadDone(true)
-      setTimeout(() => onComplete(created, dailyMinutes, timePref), 1200)
+      let examDays = 14
+
+      if (lower.includes('next week') || lower.includes('1 week') || lower.includes('7 days')) {
+        examDays = 7
+      } else if (lower.includes('tomorrow') || lower.includes('1 day')) {
+        examDays = 1
+      } else if (lower.includes('3 days')) {
+        examDays = 3
+      } else if (lower.includes('5 days')) {
+        examDays = 5
+      } else if (lower.includes('3 weeks') || lower.includes('21 days')) {
+        examDays = 21
+      }
+
+      const examDateObj = new Date()
+      examDateObj.setDate(examDateObj.getDate() + examDays)
+      const examDateStr = examDateObj.toISOString().split('T')[0]
+
+      // 1. Enroll student in course
+      await enrollSubjects({
+        subjects: [
+          {
+            subjectId: selectedSubject._id,
+            examDate: examDateStr,
+            targetGoal: inferredGoal as any,
+            confidence: 3,
+          },
+        ],
+      })
+
+      // 2. Generate plan using Gemini AI intelligence layer + deterministic scheduler
+      let fullPrompt = promptText
+      if (!lower.includes(selectedSubject.name.toLowerCase()) && !lower.includes(selectedSubject.code.toLowerCase())) {
+        fullPrompt = `For ${selectedSubject.name}: ${promptText}`
+      }
+
+      const planRes = await generatePlan({
+        prompt: fullPrompt,
+        days: examDays,
+        subjectId: selectedSubject._id,
+        targetGoal: inferredGoal,
+        timePreference: 'flexible'
+      })
+
+      const planNotice = planRes.strategyExplanation || planRes.feasibility?.message || 'Study plan generated successfully ✓'
+      setParsedPlanFeedback(planNotice)
+
+      const subs = await fetchSubjects()
+      const mapped = subs.map((s: any, idx: number) => mapBackendSubject(s, idx))
+
+      setTimeout(() => {
+        onComplete(mapped, 135, 'flexible')
+      }, 1200)
     } catch (err: any) {
-      setLoading(false)
-      setError(err.message || 'Something went wrong building your plan. Please try again.')
+      setIsProcessing(false)
+      setErrorMessage(err.message || 'Failed to generate study plan')
     }
   }
 
-  if (loading) {
+  if (loadingCatalog) {
     return (
-      <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center px-6">
-        {!loadDone ? (
-          <div className="text-center fade-in">
-            <div className="w-16 h-16 rounded-2xl bg-indigo-500 flex items-center justify-center text-2xl mx-auto mb-6 shadow-lg shadow-indigo-200">
-              📐
-            </div>
-            <h2 className="text-xl font-bold text-slate-800 mb-2">Building your plan…</h2>
-            <p className="text-sm text-slate-400 mb-8">Analysing subjects, deadlines & confidence</p>
-            <div className="flex gap-2 justify-center">
-              <span className="w-2 h-2 rounded-full bg-indigo-400 dot-1" />
-              <span className="w-2 h-2 rounded-full bg-indigo-400 dot-2" />
-              <span className="w-2 h-2 rounded-full bg-indigo-400 dot-3" />
-            </div>
-          </div>
-        ) : (
-          <div className="text-center fade-in">
-            <div className="w-16 h-16 rounded-2xl bg-emerald-500 flex items-center justify-center text-2xl mx-auto mb-6 shadow-lg shadow-emerald-200">
-              ✨
-            </div>
-            <h2 className="text-xl font-bold text-slate-800 mb-2">{"Your plan is ready!"}</h2>
-            <p className="text-sm text-slate-400">Taking you to today's sessions…</p>
-          </div>
-        )}
+      <div className="min-h-[70vh] flex flex-col items-center justify-center text-center px-4">
+        <div className="w-12 h-12 rounded-2xl bg-indigo-50 flex items-center justify-center text-xl animate-pulse mb-4 text-indigo-600">
+          ⚡
+        </div>
+        <p className="text-sm font-semibold text-slate-700">Loading syllabus courses…</p>
       </div>
     )
   }
 
   return (
-    <div className="fade-in">
-      <div className="flex items-center justify-between mb-8 pb-4 border-b border-slate-200/70">
-        <div className="flex items-center gap-2">
-          <span className="text-xs font-bold text-indigo-600 bg-indigo-50 px-3 py-1 rounded-full uppercase tracking-wider">
-            Step {step} of 3
-          </span>
-          <span className="text-xs text-slate-400 font-medium hidden sm:inline">
-            {step === 1 ? '• Add subjects' : step === 2 ? '• Study schedule' : '• Final review'}
-          </span>
+    <div className="py-2">
+      {/* Progress pill header */}
+      <div className="flex items-center justify-between mb-6 pb-4 border-b border-slate-100">
+        <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
+          Step {step} of 2
+        </span>
+        <div className="flex items-center gap-1.5">
+          <div className={`h-2 rounded-full transition-all duration-300 ${step === 1 ? 'w-8 bg-indigo-600' : 'w-2 bg-indigo-200'}`} />
+          <div className={`h-2 rounded-full transition-all duration-300 ${step === 2 ? 'w-8 bg-indigo-600' : 'w-2 bg-slate-200'}`} />
         </div>
-        <ProgressDots step={step} />
       </div>
 
+      {/* STEP 1: Syllabus Catalog Selection */}
       {step === 1 && (
-        <div className="fade-in">
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-800 mb-1">{"Let's build your study plan"}</h1>
-          <p className="text-sm text-slate-400 mb-6">{"Tell us what you're studying and we'll organize the rest."}</p>
+        <div>
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-800 tracking-tight mb-2">
+            Select Your Course
+          </h1>
+          <p className="text-sm text-slate-500 mb-6">
+            Choose from the verified Mumbai University syllabus catalog.
+          </p>
 
-          <div className="space-y-4">
-            {subjects.map((s, i) => (
-              <SubjectCard
-                key={s.id}
-                subject={s}
-                onChange={updated => setSubjects(subjects.map(x => (x.id === s.id ? updated : x)))}
-                onRemove={() => setSubjects(subjects.filter(x => x.id !== s.id))}
-              />
-            ))}
+          <div className="space-y-3 mb-6">
+            {catalog.map(c => {
+              const isSelected = c._id === selectedSubjectId
+              return (
+                <div
+                  key={c._id}
+                  onClick={() => setSelectedSubjectId(c._id)}
+                  className={`flex items-center justify-between p-4 rounded-2xl border transition-all cursor-pointer ${
+                    isSelected
+                      ? 'border-indigo-600 bg-indigo-50/50 shadow-sm ring-1 ring-indigo-600'
+                      : 'border-slate-200 bg-white hover:border-slate-300 hover:shadow-xs'
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <span className="text-2xl">📚</span>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-bold px-2 py-0.5 rounded bg-indigo-100 text-indigo-700 font-mono">
+                          {c.code}
+                        </span>
+                        <span className="text-xs font-semibold text-slate-400">{c.credits} Credits</span>
+                      </div>
+                      <p className="font-bold text-slate-800 text-sm mt-0.5">{c.name}</p>
+                      <p className="text-xs text-slate-400">
+                        {c.moduleCount} modules · {c.conceptCount} concepts
+                      </p>
+                    </div>
+                  </div>
+                  <div
+                    className={`w-6 h-6 rounded-full border-2 flex items-center justify-center text-xs font-bold transition-all ${
+                      isSelected
+                        ? 'border-indigo-600 bg-indigo-600 text-white'
+                        : 'border-slate-200 text-transparent'
+                    }`}
+                  >
+                    ✓
+                  </div>
+                </div>
+              )
+            })}
           </div>
 
-          <button
-            onClick={() => setSubjects([...subjects, newDraft()])}
-            className="w-full mt-4 py-3.5 rounded-2xl border-2 border-dashed border-slate-200 text-sm font-semibold text-slate-500 hover:border-indigo-400 hover:text-indigo-600 transition-all flex items-center justify-center gap-2 cursor-pointer bg-white/60 hover:bg-white"
-          >
-            <span className="text-lg leading-none font-bold">+</span>
-            <span>Add another subject</span>
-          </button>
-
-          <div className="mt-8 pt-6 border-t border-slate-200/80 flex items-center justify-end">
+          <div className="flex justify-end pt-4 border-t border-slate-100">
             <button
               onClick={() => setStep(2)}
-              disabled={subjects.filter(s => s.name.trim()).length === 0}
-              className="w-full sm:w-auto px-8 py-3.5 bg-indigo-600 hover:bg-indigo-700 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed text-white font-bold rounded-2xl shadow-md shadow-indigo-200 transition-all text-sm flex items-center justify-center gap-2 cursor-pointer"
+              disabled={!selectedSubjectId}
+              className="w-full sm:w-auto px-8 py-3.5 bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white font-bold rounded-2xl shadow-md shadow-indigo-200 transition-all text-sm flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
             >
-              <span>Continue</span>
+              <span>Continue with {catalog.find(c => c._id === selectedSubjectId)?.name || 'Course'}</span>
               <span>→</span>
             </button>
           </div>
         </div>
       )}
 
+      {/* STEP 2: Natural-Language Request & Goal */}
       {step === 2 && (
-        <div className="fade-in">
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-800 mb-1">How much time can you study?</h1>
-          <p className="text-sm text-slate-400 mb-8">{"We'll create a plan that fits your real life."}</p>
+        <div>
+          <div className="flex items-center gap-2 mb-2">
+            <span className="text-xs font-bold px-2.5 py-0.5 rounded bg-indigo-50 text-indigo-700 font-mono">
+              {selectedSubject?.code}
+            </span>
+            <span className="text-xs font-semibold text-slate-500">{selectedSubject?.name}</span>
+          </div>
 
-          <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 mb-6 text-center">
-            <p className="text-5xl font-extrabold text-indigo-500 mb-1">{formatMinutes(dailyMinutes)}</p>
-            <p className="text-sm text-slate-400 mb-6">per day</p>
-            <input
-              type="range"
-              min={30}
-              max={360}
-              step={15}
-              value={dailyMinutes}
-              onChange={e => setDailyMinutes(Number(e.target.value))}
-              className="w-full cursor-pointer"
-              style={{
-                background: `linear-gradient(to right, #6366F1 0%, #6366F1 ${((dailyMinutes - 30) / 330) * 100}%, #E2E8F0 ${((dailyMinutes - 30) / 330) * 100}%, #E2E8F0 100%)`,
-              }}
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-800 tracking-tight mb-2">
+            What is your exam goal?
+          </h1>
+          <p className="text-sm text-slate-500 mb-6">
+            Describe your situation in natural language. Gemini AI will analyze your intent and formulate a strategic syllabus allocation.
+          </p>
+
+          <div className="bg-white rounded-3xl border border-slate-200 shadow-sm p-5 mb-6">
+            <label className="text-xs font-bold uppercase tracking-wider text-slate-500 block mb-2">
+              Natural Language Request
+            </label>
+            <textarea
+              rows={3}
+              value={promptText}
+              onChange={e => setPromptText(e.target.value)}
+              placeholder="e.g. My exam is next week. I don't want to top, I just want to pass this subject."
+              className="w-full text-sm font-medium text-slate-800 placeholder:text-slate-400 outline-none resize-none"
             />
-            <div className="flex justify-between text-xs text-slate-300 mt-2">
-              <span>30 min</span>
-              <span>6 hrs</span>
+
+            <div className="mt-3 pt-3 border-t border-slate-100">
+              <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2">
+                Quick Prompts
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {DEFAULT_PROMPTS.map((prompt, idx) => (
+                  <button
+                    key={idx}
+                    type="button"
+                    onClick={() => setPromptText(prompt)}
+                    className="text-xs text-left py-1.5 px-3 rounded-xl bg-slate-50 hover:bg-indigo-50 hover:text-indigo-700 border border-slate-200 transition-colors text-slate-600 cursor-pointer"
+                  >
+                    {prompt}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
 
-          <p className="text-sm font-semibold text-slate-600 mb-3">When do you prefer studying?</p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {timePrefOptions.map(opt => (
-              <button
-                key={opt.id}
-                onClick={() => setTimePref(opt.id)}
-                className={`rounded-2xl border-2 p-4 text-left transition-all duration-200 cursor-pointer ${
-                  timePref === opt.id
-                    ? 'border-indigo-400 bg-indigo-50 shadow-sm shadow-indigo-100'
-                    : 'border-slate-100 bg-white hover:border-slate-200'
-                }`}
-              >
-                <span className="text-2xl block mb-2">{opt.icon}</span>
-                <p className={`text-sm font-semibold ${timePref === opt.id ? 'text-indigo-700' : 'text-slate-700'}`}>
-                  {opt.label}
-                </p>
-                <p className="text-xs text-slate-400">{opt.hint}</p>
-              </button>
-            ))}
-          </div>
+          {errorMessage && (
+            <div className="p-4 mb-4 rounded-2xl bg-rose-50 border border-rose-200 text-xs font-semibold text-rose-700">
+              {errorMessage}
+            </div>
+          )}
 
-          <div className="mt-8 pt-6 border-t border-slate-200/80 flex items-center justify-between gap-3">
+          {parsedPlanFeedback && (
+            <div className="p-4 mb-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-xs font-semibold text-emerald-700 fade-in">
+              ✨ {parsedPlanFeedback}
+            </div>
+          )}
+
+          {/* Action Buttons */}
+          <div className="flex items-center justify-between pt-4 border-t border-slate-100 gap-3">
             <button
               onClick={() => setStep(1)}
+              disabled={isProcessing}
               className="px-5 py-3 text-sm font-semibold text-slate-500 hover:text-slate-800 transition-colors cursor-pointer"
             >
               ← Back
             </button>
             <button
-              onClick={() => setStep(3)}
-              className="w-full sm:w-auto px-8 py-3.5 bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white font-bold rounded-2xl shadow-md shadow-indigo-200 transition-all text-sm flex items-center justify-center gap-2 cursor-pointer"
+              onClick={handleGeneratePlan}
+              disabled={isProcessing || !promptText.trim()}
+              className="w-full sm:w-auto px-8 py-3.5 bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white font-bold rounded-2xl shadow-md shadow-indigo-200 transition-all text-sm flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
             >
-              <span>Continue</span>
-              <span>→</span>
-            </button>
-          </div>
-        </div>
-      )}
-
-      {step === 3 && (
-        <div className="fade-in">
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-800 mb-1">{"You're all set ✨"}</h1>
-          <p className="text-sm text-slate-400 mb-6">{"Here's your study profile. Ready to generate your plan?"}</p>
-
-          <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5 mb-4">
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5">
-              <div className="bg-indigo-50 rounded-xl p-3 text-center">
-                <p className="text-2xl font-extrabold text-indigo-600">{subjects.filter(s => s.name).length}</p>
-                <p className="text-xs text-indigo-400 font-medium">Subjects</p>
-              </div>
-              <div className="bg-slate-50 rounded-xl p-3 text-center">
-                <p className="text-2xl font-extrabold text-slate-700">{formatMinutes(dailyMinutes)}</p>
-                <p className="text-xs text-slate-400 font-medium">Per day</p>
-              </div>
-              <div className="bg-slate-50 rounded-xl p-3 text-center">
-                <p className="text-base font-bold text-slate-700 truncate">
-                  {timePrefOptions.find(t => t.id === timePref)?.icon}{' '}
-                  {timePrefOptions.find(t => t.id === timePref)?.label}
-                </p>
-                <p className="text-xs text-slate-400 font-medium">Preference</p>
-              </div>
-              <div className="bg-slate-50 rounded-xl p-3 text-center">
-                <p className="text-2xl font-extrabold text-slate-700">
-                  {daysUntilExam !== null ? `${daysUntilExam}d` : '—'}
-                </p>
-                <p className="text-xs text-slate-400 font-medium">Nearest exam</p>
-              </div>
-            </div>
-
-            <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Subjects</p>
-            <div className="flex flex-wrap gap-2">
-              {subjects.filter(s => s.name).map(s => (
-                <span key={s.id} className="inline-flex items-center gap-1.5 text-xs font-semibold bg-slate-50 text-slate-600 border border-slate-100 px-3 py-1.5 rounded-full">
-                  <span>{guessEmoji(s.name)}</span>
-                  {s.name}
-                </span>
-              ))}
-            </div>
-          </div>
-
-          {error && <p className="text-xs text-rose-500 text-center mb-3">{error}</p>}
-
-          <div className="mt-8 pt-6 border-t border-slate-200/80 flex items-center justify-between gap-3">
-            <button
-              onClick={() => setStep(2)}
-              className="px-5 py-3 text-sm font-semibold text-slate-500 hover:text-slate-800 transition-colors cursor-pointer"
-            >
-              ← Back
-            </button>
-            <button
-              onClick={handleGenerate}
-              disabled={loading}
-              className="w-full sm:w-auto px-8 py-3.5 bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white font-bold rounded-2xl shadow-md shadow-indigo-200 transition-all text-sm flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60"
-            >
-              <span>Generate my plan ✨</span>
+              {isProcessing ? (
+                <>
+                  <span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+                  <span>Analyzing Syllabus & Building Plan…</span>
+                </>
+              ) : (
+                <>
+                  <span>Generate Plan ✨</span>
+                </>
+              )}
             </button>
           </div>
         </div>

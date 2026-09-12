@@ -3,7 +3,6 @@ import { AuthUser } from '../types'
 const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5001/api'
 const TOKEN_KEY = 'studyflow_auth_token'
 const USER_KEY = 'studyflow_auth_user'
-const LEGACY_USER_ID_KEY = 'studyflow_user_id'
 
 export function getAuthToken(): string | null {
   return localStorage.getItem(TOKEN_KEY)
@@ -20,40 +19,41 @@ export function getStoredUser(): AuthUser | null {
 }
 
 export function setAuthSession(token: string, user: AuthUser) {
+  // Purge any legacy or stale IDs before setting new session
+  localStorage.removeItem('studyflow_user_id')
   localStorage.setItem(TOKEN_KEY, token)
   localStorage.setItem(USER_KEY, JSON.stringify(user))
-  localStorage.setItem(LEGACY_USER_ID_KEY, user.userId)
+  window.dispatchEvent(new Event('studyflow:auth-changed'))
 }
 
 export function clearAuthSession() {
   localStorage.removeItem(TOKEN_KEY)
   localStorage.removeItem(USER_KEY)
-  // note: we do not necessarily remove all cached plan settings, but clear auth
+  localStorage.removeItem('studyflow_user_id')
+  localStorage.removeItem('studyflow_guest_mode')
+  localStorage.removeItem('studyflow_plan_settings')
   window.dispatchEvent(new Event('studyflow:auth-changed'))
 }
 
-export function getUserId(): string {
+export function getUserId(): string | null {
   const user = getStoredUser()
-  if (user?.userId) return user.userId
-
-  let id = localStorage.getItem(LEGACY_USER_ID_KEY)
-  if (!id) {
-    id = crypto.randomUUID()
-    localStorage.setItem(LEGACY_USER_ID_KEY, id)
-  }
-  return id
+  return user?.userId || null
 }
 
 async function request(path: string, options: RequestInit = {}) {
   const token = getAuthToken()
+  const userId = getUserId()
+
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
-    'x-user-id': getUserId(),
     ...(options.headers as Record<string, string> || {}),
   }
 
   if (token) {
     headers['Authorization'] = `Bearer ${token}`
+  }
+  if (userId) {
+    headers['x-user-id'] = userId
   }
 
   const res = await fetch(`${API_BASE}${path}`, {
@@ -68,7 +68,7 @@ async function request(path: string, options: RequestInit = {}) {
     // no JSON body
   }
 
-  if (res.status === 401 && !path.includes('/auth/login') && !path.includes('/auth/register')) {
+  if (res.status === 401 && !path.includes('/auth/login') && !path.includes('/auth/register') && !path.includes('/auth/guest')) {
     clearAuthSession()
   }
 
@@ -88,3 +88,4 @@ export const api = {
     request(path, { method: 'PUT', body: data !== undefined ? JSON.stringify(data) : undefined }),
   del: (path: string) => request(path, { method: 'DELETE' }),
 }
+

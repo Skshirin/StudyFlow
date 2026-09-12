@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react'
-import { Session, AuthUser } from '../types'
+import { Session, Subject, AuthUser } from '../types'
 import SessionCard from '../components/SessionCard'
-import { fetchToday, completeTask, missTask, adjustPlan } from '../api/endpoints'
-import { mapBackendTask } from '../api/adapters'
+import { fetchToday, fetchSubjects, generatePlan, completeTask, missTask, adjustPlan } from '../api/endpoints'
+import { mapBackendTask, mapBackendSubject } from '../api/adapters'
 
 interface PlanHealth {
   status: 'green' | 'yellow' | 'red'
@@ -98,39 +98,26 @@ function PlanUpdateModal({
         )}
 
         {impacted.length > 0 ? (
-          <>
-            <p className="text-xs font-bold text-slate-400 tracking-wider uppercase mb-2">Moved to</p>
-            <div className="space-y-2 mb-5">
-              {impacted.map((item, i) => (
-                <div key={i} className="flex items-center justify-between bg-slate-50 rounded-xl px-4 py-2.5">
-                  <span className="text-sm font-medium text-slate-600">{formatDate(item.date)}</span>
-                  <span className="text-sm font-semibold text-indigo-500">+{item.addedMinutes} min</span>
+          <div className="mb-6">
+            <p className="text-xs font-bold text-slate-400 tracking-wider uppercase mb-3">Adjusted days</p>
+            <div className="space-y-2">
+              {impacted.map(row => (
+                <div key={row.date} className="flex items-center justify-between py-2 border-b border-slate-100">
+                  <span className="text-sm text-slate-600 font-medium">{formatDate(row.date)}</span>
+                  <span className="text-xs font-semibold text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-full">
+                    +{row.addedMinutes} min
+                  </span>
                 </div>
               ))}
             </div>
-          </>
+          </div>
         ) : (
-          <div className="bg-amber-50 border border-amber-100 rounded-2xl p-4 mb-5">
-            <p className="text-sm text-amber-700">
-              No spare capacity in the next few days — consider lightening your plan or increasing your daily time.
-            </p>
-          </div>
-        )}
-
-        {impacted.length > 0 && (
-          <div className="bg-emerald-50 border border-emerald-100 rounded-2xl p-4 mb-5 space-y-1.5">
-            {['Daily limit maintained', 'Exam deadlines respected', 'Other priorities protected'].map(item => (
-              <div key={item} className="flex items-center gap-2">
-                <span className="text-emerald-500 font-bold text-sm">✓</span>
-                <span className="text-sm text-emerald-700 font-medium">{item}</span>
-              </div>
-            ))}
-          </div>
+          <p className="text-sm text-slate-400 mb-6">No capacity was found in the next few days to reschedule.</p>
         )}
 
         <button
           onClick={onClose}
-          className="w-full bg-indigo-500 hover:bg-indigo-600 active:bg-indigo-700 text-white font-bold py-3.5 rounded-2xl text-sm transition-colors shadow-sm shadow-indigo-200"
+          className="w-full bg-indigo-500 hover:bg-indigo-600 active:bg-indigo-700 text-white font-semibold py-3 rounded-2xl text-sm transition-colors"
         >
           Got it
         </button>
@@ -146,10 +133,14 @@ const HEALTH_CONFIG = {
 }
 
 function PlanHealthModal({ health, onClose }: { health: PlanHealth; onClose: () => void }) {
-  const cfg = HEALTH_CONFIG[health.status]
-  const requiredH = Math.round((health.requiredMinutes / 60) * 10) / 10
-  const availableH = health.availableMinutes !== null ? Math.round((health.availableMinutes / 60) * 10) / 10 : null
-  const bufferH = availableH !== null ? Math.round((availableH - requiredH) * 10) / 10 : null
+  const reqH = Math.round(health.requiredMinutes / 60)
+  const availH = health.availableMinutes !== null ? Math.round(health.availableMinutes / 60) : null
+  const statusColors = {
+    green: { bg: 'bg-emerald-50', text: 'text-emerald-700', border: 'border-emerald-200' },
+    yellow: { bg: 'bg-amber-50', text: 'text-amber-700', border: 'border-amber-200' },
+    red: { bg: 'bg-rose-50', text: 'text-rose-700', border: 'border-rose-200' },
+  }
+  const sc = statusColors[health.status]
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center" onClick={onClose}>
@@ -160,30 +151,21 @@ function PlanHealthModal({ health, onClose }: { health: PlanHealth; onClose: () 
       >
         <div className="w-10 h-1 rounded-full bg-slate-200 mx-auto mb-6" />
         <div className="flex items-center gap-2 mb-2">
-          <span className="text-2xl">{cfg.icon}</span>
-          <h3 className="text-xl font-bold text-slate-800">{cfg.label}</h3>
+          <div className={`w-3 h-3 rounded-full ${health.status === 'green' ? 'bg-emerald-400' : health.status === 'yellow' ? 'bg-amber-400' : 'bg-rose-400'}`} />
+          <h3 className="text-lg font-bold text-slate-800">Plan Health</h3>
         </div>
         <p className="text-sm text-slate-500 mb-6">{health.message}</p>
 
-        {availableH !== null && (
-          <div className="space-y-3 mb-5">
-            {[
-              { label: 'Remaining study', value: `${requiredH}h`, pct: 100 },
-              { label: 'Available capacity', value: `${availableH}h`, pct: availableH ? Math.min((requiredH / availableH) * 100, 100) : 0 },
-              { label: 'Buffer', value: `${bufferH! > 0 ? bufferH : 0}h`, pct: bufferH! > 0 && availableH ? (bufferH! / availableH) * 100 : 0 },
-            ].map(item => (
-              <div key={item.label}>
-                <div className="flex justify-between text-sm mb-1">
-                  <span className="text-slate-600 font-medium">{item.label}</span>
-                  <span className="font-bold text-slate-800">{item.value}</span>
-                </div>
-                <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
-                  <div className="h-full bg-indigo-400 rounded-full transition-all" style={{ width: `${item.pct}%` }} />
-                </div>
-              </div>
-            ))}
+        <div className="grid grid-cols-2 gap-3 mb-6">
+          <div className="bg-slate-50 rounded-2xl p-4">
+            <p className="text-xs text-slate-400 mb-1">Study time needed</p>
+            <p className="text-xl font-extrabold text-slate-700">{reqH}h</p>
           </div>
-        )}
+          <div className="bg-slate-50 rounded-2xl p-4">
+            <p className="text-xs text-slate-400 mb-1">Time available</p>
+            <p className="text-xl font-extrabold text-slate-700">{availH !== null ? `${availH}h` : 'Flexible'}</p>
+          </div>
+        </div>
 
         <button
           onClick={onClose}
@@ -196,17 +178,21 @@ function PlanHealthModal({ health, onClose }: { health: PlanHealth; onClose: () 
   )
 }
 
+
+
 type Toast = { id: number; message: string }
 
 interface TodayProps {
   user?: AuthUser | null
+  onProgressChanged?: () => void
 }
 
-export default function Today({ user }: TodayProps) {
+export default function Today({ user, onProgressChanged }: TodayProps) {
   const [loading, setLoading] = useState(true)
   const [loadError, setLoadError] = useState<string | null>(null)
   const [sessions, setSessions] = useState<Session[]>([])
   const [planHealth, setPlanHealth] = useState<PlanHealth | null>(null)
+  const [availableSubjects, setAvailableSubjects] = useState<Subject[]>([])
 
   const [feedbackSessionId, setFeedbackSessionId] = useState<string | null>(null)
   const [planUpdate, setPlanUpdate] = useState<{
@@ -228,10 +214,16 @@ export default function Today({ user }: TodayProps) {
   const loadToday = () => {
     setLoading(true)
     setLoadError(null)
-    fetchToday()
-      .then(res => {
-        setSessions(res.tasks.map(mapBackendTask))
-        setPlanHealth(res.planHealth)
+    Promise.all([
+      fetchToday(),
+      fetchSubjects().catch(() => [])
+    ])
+      .then(([todayRes, subjectsRes]) => {
+        setSessions(todayRes.tasks.map(mapBackendTask))
+        setPlanHealth(todayRes.planHealth)
+        if (Array.isArray(subjectsRes)) {
+          setAvailableSubjects(subjectsRes.map((s: any, i: number) => mapBackendSubject(s, i)))
+        }
       })
       .catch(err => setLoadError(err.message))
       .finally(() => setLoading(false))
@@ -247,6 +239,38 @@ export default function Today({ user }: TodayProps) {
   const totalM = totalMin % 60
   const totalStr = totalH > 0 ? (totalM > 0 ? `${totalH}h ${totalM}m` : `${totalH}h`) : `${totalM}m`
   const completedCount = studySessions.filter(s => s.status === 'completed').length
+
+  // Break display invariant:
+  // 1. If 0 or 1 study session exists: ZERO breaks (no orphan breaks allowed).
+  // 2. If >= 2 study sessions exist: EXACTLY ONE break in between each consecutive study session.
+  const displaySessions: Session[] = []
+  if (studySessions.length >= 1) {
+    studySessions.forEach((s, idx) => {
+      displaySessions.push(s)
+      if (idx < studySessions.length - 1) {
+        const existingBreak = sessions.filter(b => b.type === 'break')[idx]
+        displaySessions.push(
+          existingBreak || {
+            id: `break-synth-${s.id}-${idx}`,
+            time: '',
+            subjectId: null,
+            subjectName: 'Break',
+            subjectEmoji: '☕',
+            subjectColor: '#94A3B8',
+            topic: '',
+            conceptId: null,
+            importance: null,
+            examRelevance: null,
+            difficulty: null,
+            type: 'break',
+            duration: 10,
+            whyToday: 'Rest, hydrate, and prepare for next session',
+            status: 'upcoming',
+          }
+        )
+      }
+    })
+  }
 
   const hour = new Date().getHours()
   const timeOfDay = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening'
@@ -285,6 +309,7 @@ export default function Today({ user }: TodayProps) {
       await completeTask(id, feedback)
       updateSession(id, { status: 'completed' })
       addToast(rating ? `Session logged as ${rating.toLowerCase()} — plan updated` : 'Session completed ✓')
+      onProgressChanged?.()
     } catch (err: any) {
       addToast(err.message || 'Could not save that')
     }
@@ -298,11 +323,16 @@ export default function Today({ user }: TodayProps) {
     setAiResponse(null)
     try {
       const res = await adjustPlan(text)
-      setAiResponse(res.message)
+      if (res.message) {
+        setAiResponse(res.message)
+        addToast(res.message)
+      }
       if (res.tasks) setSessions(res.tasks.map(mapBackendTask))
-      if (res.impacted) setPlanUpdate({ impacted: res.impacted })
+      if (res.impacted && res.impacted.length > 0) {
+        setPlanUpdate({ impacted: res.impacted })
+      }
     } catch (err: any) {
-      addToast(err.message || 'Could not adjust your plan')
+      addToast(err.message || 'Could not adjust plan')
     } finally {
       setAiLoading(false)
     }
@@ -395,22 +425,31 @@ export default function Today({ user }: TodayProps) {
           </div>
         )}
 
-        {sessions.length === 0 ? (
-          <div className="text-center py-16">
-            <p className="text-sm text-slate-400">Nothing scheduled for today. Enjoy the break!</p>
+        {displaySessions.length === 0 ? (
+          <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-8 text-center my-6">
+            <p className="text-3xl mb-2">🎉</p>
+            <p className="text-sm font-semibold text-slate-700 mb-1">
+              {studySessions.length === 0 && sessions.some(s => s.status === 'completed')
+                ? "You've finished everything for today!"
+                : "No study sessions scheduled for today"}
+            </p>
+            <p className="text-xs text-slate-400">
+              {studySessions.length === 0 && sessions.some(s => s.status === 'completed')
+                ? "Great job. Take a well-earned rest."
+                : "Enjoy your free time or adjust your plan when you're ready."}
+            </p>
           </div>
         ) : (
-          <div className="relative">
-            <div className="absolute left-[30px] top-5 bottom-5 w-0.5 bg-slate-100 z-0" />
-            {sessions.map(session => (
-              <div key={session.id} className="relative flex gap-3 mb-3">
-                <div className="flex-shrink-0 w-14 text-right pt-3.5">
-                  <span className="text-xs font-medium text-slate-400">{session.time}</span>
+          <div className="space-y-3">
+            {displaySessions.map((session, idx) => (
+              <div key={session.id || idx} className="relative flex items-start gap-3">
+                <div className="flex-shrink-0 w-8 text-center pt-3.5">
+                  <span className="text-xs font-extrabold text-slate-400">#{idx + 1}</span>
                 </div>
-                <div className="flex flex-col items-center z-10 mt-3 flex-shrink-0">
+                <div className="flex flex-col items-center z-10 mt-4 flex-shrink-0">
                   <div className={`w-3 h-3 rounded-full flex-shrink-0 transition-all duration-300 ${dotColor(session)}`} />
                 </div>
-                <div className="flex-1 min-w-0 pb-1">
+                <div className="flex-1 min-w-0">
                   <SessionCard session={session} onStart={handleStart} onComplete={handleComplete} onMissed={handleMissed} />
                 </div>
               </div>

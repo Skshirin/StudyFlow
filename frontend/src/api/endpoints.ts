@@ -10,7 +10,26 @@ export const loginUser = (payload: { email: string; password: string }) =>
 export const registerUser = (payload: { name: string; email: string; password: string }) =>
   api.post('/auth/register', payload)
 
+export const createGuestSession = () =>
+  api.post('/auth/guest')
+
 export const fetchCurrentUser = () => api.get('/auth/me')
+
+// ---- Syllabus Catalog & Enrollment (V2) ----
+export const fetchCatalog = () => api.get('/subjects/catalog')
+
+export const enrollSubjects = (payload: {
+  subjects: Array<{
+    subjectId: string
+    examDate?: string | null
+    targetGoal?: 'PASS' | 'SCORE_WELL' | 'TOP' | 'FULL_PREPARATION'
+    availableHours?: number
+    confidence?: number
+  }>
+}) => api.post('/subjects/enroll', payload)
+
+export const updateConceptProgress = (conceptId: string, status: string) =>
+  api.put(`/subjects/concepts/${conceptId}/progress`, { status })
 
 // ---- Subjects ----
 export const fetchSubjects = () => api.get('/subjects')
@@ -40,8 +59,17 @@ export const updateTopicStatus = (subjectId: string, topicName: string, status: 
 export const deleteSubject = (id: string) => api.del(`/subjects/${id}`)
 
 // ---- Plan ----
-export const generatePlan = (payload: { dailyCapacityMinutes: number; timePreference: string }) =>
-  api.post('/plan/generate', payload)
+export const generatePlan = (payload: {
+  dailyCapacityMinutes?: number
+  timePreference?: string
+  days?: number
+  durationDays?: number
+  subjectId?: string
+  targetGoal?: string
+  prompt?: string
+}) => api.post('/plan/generate', payload)
+
+export const fetchCurrentPlan = () => api.get('/plan/current')
 
 export const fetchToday = () => api.get('/plan/today')
 
