@@ -1,0 +1,1165 @@
+{
+  "university": "University of Mumbai",
+  "program": "Computer Engineering",
+  "semester": "VII",
+  "scheme": "REV-2019 'C' Scheme",
+  "subjects": [
+    {
+      "code": "CSC701",
+      "name": "Machine Learning",
+      "credits": 3,
+      "modules": [
+        {
+          "name": "Module 1: Introduction to Machine Learning",
+          "hours": 4,
+          "concepts": [
+            {
+              "name": "Machine Learning Overview & Types",
+              "description": "Machine Learning, Types of Machine Learning.",
+              "importance": 2,
+              "difficulty": 1,
+              "examRelevance": 2,
+              "estimatedStudyMinutes": 30
+            },
+            {
+              "name": "Issues, Applications & ML Development Steps",
+              "description": "Issues in Machine Learning, Applications of Machine Learning, Steps in developing a Machine Learning Application.",
+              "importance": 1,
+              "difficulty": 1,
+              "examRelevance": 1,
+              "estimatedStudyMinutes": 30
+            },
+            {
+              "name": "Training Error & Generalization Error",
+              "description": "Training Error, Generalization error.",
+              "importance": 2,
+              "difficulty": 2,
+              "examRelevance": 2,
+              "estimatedStudyMinutes": 30
+            },
+            {
+              "name": "Overfitting & Underfitting",
+              "description": "Overfitting, Underfitting concepts in model training.",
+              "importance": 3,
+              "difficulty": 2,
+              "examRelevance": 3,
+              "estimatedStudyMinutes": 30
+            },
+            {
+              "name": "Bias-Variance Tradeoff",
+              "description": "Bias-Variance trade-off.",
+              "importance": 3,
+              "difficulty": 2,
+              "examRelevance": 3,
+              "estimatedStudyMinutes": 30
+            }
+          ]
+        },
+        {
+          "name": "Module 2: Learning with Regression and Trees",
+          "hours": 9,
+          "concepts": [
+            {
+              "name": "Linear Regression",
+              "description": "Learning with Regression: Linear Regression.",
+              "importance": 3,
+              "difficulty": 2,
+              "examRelevance": 3,
+              "estimatedStudyMinutes": 45
+            },
+            {
+              "name": "Multivariate Linear Regression",
+              "description": "Multivariate Linear Regression.",
+              "importance": 2,
+              "difficulty": 2,
+              "examRelevance": 2,
+              "estimatedStudyMinutes": 30
+            },
+            {
+              "name": "Logistic Regression",
+              "description": "Logistic Regression.",
+              "importance": 3,
+              "difficulty": 2,
+              "examRelevance": 3,
+              "estimatedStudyMinutes": 45
+            },
+            {
+              "name": "Decision Trees Fundamentals",
+              "description": "Learning with Trees: Decision Trees.",
+              "importance": 3,
+              "difficulty": 2,
+              "examRelevance": 3,
+              "estimatedStudyMinutes": 30
+            },
+            {
+              "name": "Constructing Decision Trees using Gini Index",
+              "description": "Constructing Decision Trees using Gini Index (Regression).",
+              "importance": 3,
+              "difficulty": 3,
+              "examRelevance": 3,
+              "estimatedStudyMinutes": 45
+            },
+            {
+              "name": "Classification and Regression Trees (CART)",
+              "description": "Classification and Regression Trees (CART).",
+              "importance": 2,
+              "difficulty": 2,
+              "examRelevance": 2,
+              "estimatedStudyMinutes": 30
+            },
+            {
+              "name": "Confusion Matrix & Kappa Statistics",
+              "description": "Performance Metrics: Confusion Matrix, Kappa Statistics.",
+              "importance": 3,
+              "difficulty": 2,
+              "examRelevance": 3,
+              "estimatedStudyMinutes": 30
+            },
+            {
+              "name": "Sensitivity, Specificity, Precision, Recall, F-measure",
+              "description": "Performance metrics for classification models.",
+              "importance": 3,
+              "difficulty": 2,
+              "examRelevance": 3,
+              "estimatedStudyMinutes": 30
+            },
+            {
+              "name": "ROC Curve",
+              "description": "ROC curve as a performance metric.",
+              "importance": 2,
+              "difficulty": 2,
+              "examRelevance": 2,
+              "estimatedStudyMinutes": 30
+            }
+          ]
+        },
+        {
+          "name": "Module 3: Ensemble Learning",
+          "hours": 6,
+          "concepts": [
+            {
+              "name": "Ensembles & K-fold Cross Validation",
+              "description": "Understanding Ensembles, K-fold cross validation.",
+              "importance": 2,
+              "difficulty": 2,
+              "examRelevance": 2,
+              "estimatedStudyMinutes": 30
+            },
+            {
+              "name": "Boosting & Stumping",
+              "description": "Boosting, Stumping.",
+              "importance": 2,
+              "difficulty": 2,
+              "examRelevance": 2,
+              "estimatedStudyMinutes": 30
+            },
+            {
+              "name": "XGBoost",
+              "description": "XGBoost algorithm.",
+              "importance": 2,
+              "difficulty": 2,
+              "examRelevance": 2,
+              "estimatedStudyMinutes": 30
+            },
+            {
+              "name": "Bagging & Subagging",
+              "description": "Bagging, Subagging.",
+              "importance": 2,
+              "difficulty": 1,
+              "examRelevance": 2,
+              "estimatedStudyMinutes": 30
+            },
+            {
+              "name": "Random Forest",
+              "description": "Random Forest algorithm.",
+              "importance": 3,
+              "difficulty": 2,
+              "examRelevance": 3,
+              "estimatedStudyMinutes": 30
+            },
+            {
+              "name": "Comparing Bagging vs Boosting & Combining Classifiers",
+              "description": "Comparison with Boosting, different ways to combine classifiers.",
+              "importance": 2,
+              "difficulty": 2,
+              "examRelevance": 2,
+              "estimatedStudyMinutes": 30
+            }
+          ]
+        },
+        {
+          "name": "Module 4: Learning with Classification",
+          "hours": 8,
+          "concepts": [
+            {
+              "name": "Constrained Optimization & Optimal Decision Boundary",
+              "description": "Constrained Optimization, Optimal decision boundary.",
+              "importance": 2,
+              "difficulty": 3,
+              "examRelevance": 2,
+              "estimatedStudyMinutes": 45
+            },
+            {
+              "name": "Margins and Support Vectors",
+              "description": "Margins and support vectors in SVM.",
+              "importance": 3,
+              "difficulty": 3,
+              "examRelevance": 3,
+              "estimatedStudyMinutes": 45
+            },
+            {
+              "name": "SVM as Constrained Optimization (Quadratic Programming)",
+              "description": "SVM as constrained optimization problem, Quadratic Programming.",
+              "importance": 3,
+              "difficulty": 3,
+              "examRelevance": 3,
+              "estimatedStudyMinutes": 45
+            },
+            {
+              "name": "SVM for Linear and Nonlinear Classification",
+              "description": "SVM for linear and nonlinear classification.",
+              "importance": 3,
+              "difficulty": 3,
+              "examRelevance": 3,
+              "estimatedStudyMinutes": 45
+            },
+            {
+              "name": "Kernel Trick",
+              "description": "Basics of Kernel trick.",
+              "importance": 3,
+              "difficulty": 3,
+              "examRelevance": 3,
+              "estimatedStudyMinutes": 45
+            },
+            {
+              "name": "Support Vector Regression",
+              "description": "Support Vector Regression.",
+              "importance": 2,
+              "difficulty": 2,
+              "examRelevance": 2,
+              "estimatedStudyMinutes": 30
+            },
+            {
+              "name": "Multiclass Classification",
+              "description": "Multiclass Classification approaches.",
+              "importance": 2,
+              "difficulty": 2,
+              "examRelevance": 2,
+              "estimatedStudyMinutes": 30
+            }
+          ]
+        },
+        {
+          "name": "Module 5: Learning with Clustering",
+          "hours": 7,
+          "concepts": [
+            {
+              "name": "Clustering Introduction & Distance Metrics",
+              "description": "Introduction to clustering with overview of distance metrics and major clustering approaches.",
+              "importance": 2,
+              "difficulty": 1,
+              "examRelevance": 2,
+              "estimatedStudyMinutes": 30
+            },
+            {
+              "name": "Graph Based Clustering (Minimal Spanning Tree)",
+              "description": "Graph Based Clustering: Clustering with minimal spanning tree.",
+              "importance": 2,
+              "difficulty": 2,
+              "examRelevance": 2,
+              "estimatedStudyMinutes": 30
+            },
+            {
+              "name": "Model Based Clustering (Expectation Maximization)",
+              "description": "Model based Clustering: Expectation Maximization Algorithm.",
+              "importance": 3,
+              "difficulty": 3,
+              "examRelevance": 3,
+              "estimatedStudyMinutes": 45
+            },
+            {
+              "name": "Density Based Clustering (DBSCAN)",
+              "description": "Density Based Clustering: DBSCAN.",
+              "importance": 3,
+              "difficulty": 2,
+              "examRelevance": 3,
+              "estimatedStudyMinutes": 45
+            }
+          ]
+        },
+        {
+          "name": "Module 6: Dimensionality Reduction",
+          "hours": 5,
+          "concepts": [
+            {
+              "name": "Dimensionality Reduction Overview",
+              "description": "Dimensionality Reduction Techniques overview.",
+              "importance": 2,
+              "difficulty": 1,
+              "examRelevance": 2,
+              "estimatedStudyMinutes": 20
+            },
+            {
+              "name": "Principal Component Analysis (PCA)",
+              "description": "Principal Component Analysis.",
+              "importance": 3,
+              "difficulty": 3,
+              "examRelevance": 3,
+              "estimatedStudyMinutes": 60
+            },
+            {
+              "name": "Linear Discriminant Analysis (LDA)",
+              "description": "Linear Discriminant Analysis.",
+              "importance": 2,
+              "difficulty": 2,
+              "examRelevance": 2,
+              "estimatedStudyMinutes": 45
+            },
+            {
+              "name": "Singular Value Decomposition (SVD)",
+              "description": "Singular Valued Decomposition.",
+              "importance": 2,
+              "difficulty": 3,
+              "examRelevance": 2,
+              "estimatedStudyMinutes": 45
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "code": "CSC702",
+      "name": "Big Data Analytics",
+      "credits": 3,
+      "modules": [
+        {
+          "name": "Module 1: Introduction to Big Data and Hadoop",
+          "hours": 2,
+          "concepts": [
+            {
+              "name": "Big Data Characteristics & Types",
+              "description": "Introduction to Big Data - Big Data characteristics and Types of Big Data.",
+              "importance": 2,
+              "difficulty": 1,
+              "examRelevance": 2,
+              "estimatedStudyMinutes": 25
+            },
+            {
+              "name": "Traditional vs Big Data Business Approach",
+              "description": "Traditional vs. Big Data business approach, Case Study of Big Data Solutions.",
+              "importance": 1,
+              "difficulty": 1,
+              "examRelevance": 1,
+              "estimatedStudyMinutes": 20
+            },
+            {
+              "name": "Hadoop Core Components & Ecosystem",
+              "description": "Concept of Hadoop, Core Hadoop Components, Hadoop Ecosystem.",
+              "importance": 2,
+              "difficulty": 1,
+              "examRelevance": 2,
+              "estimatedStudyMinutes": 25
+            }
+          ]
+        },
+        {
+          "name": "Module 2: Hadoop HDFS and MapReduce",
+          "hours": 8,
+          "concepts": [
+            {
+              "name": "Distributed File Systems",
+              "description": "Physical Organization of Compute Nodes, Large-Scale File-System Organization.",
+              "importance": 2,
+              "difficulty": 2,
+              "examRelevance": 2,
+              "estimatedStudyMinutes": 30
+            },
+            {
+              "name": "MapReduce: Map Tasks & Grouping by Key",
+              "description": "The Map Tasks, Grouping by Key.",
+              "importance": 3,
+              "difficulty": 2,
+              "examRelevance": 3,
+              "estimatedStudyMinutes": 45
+            },
+            {
+              "name": "MapReduce: Reduce Tasks, Combiners & Node Failures",
+              "description": "The Reduce Tasks, Combiners, Details of MapReduce Execution, Coping With Node Failures.",
+              "importance": 3,
+              "difficulty": 2,
+              "examRelevance": 3,
+              "estimatedStudyMinutes": 45
+            },
+            {
+              "name": "Matrix-Vector Multiplication by MapReduce",
+              "description": "Algorithms Using MapReduce: Matrix-Vector Multiplication.",
+              "importance": 3,
+              "difficulty": 3,
+              "examRelevance": 3,
+              "estimatedStudyMinutes": 45
+            },
+            {
+              "name": "Relational-Algebra Operations by MapReduce",
+              "description": "Computing Selections, Projections, Union, Intersection, Difference by MapReduce.",
+              "importance": 3,
+              "difficulty": 3,
+              "examRelevance": 3,
+              "estimatedStudyMinutes": 45
+            },
+            {
+              "name": "Hadoop Limitations",
+              "description": "Limitations of the Hadoop framework.",
+              "importance": 1,
+              "difficulty": 1,
+              "examRelevance": 1,
+              "estimatedStudyMinutes": 20
+            }
+          ]
+        },
+        {
+          "name": "Module 3: NoSQL",
+          "hours": 10,
+          "concepts": [
+            {
+              "name": "NoSQL Introduction & Business Drivers",
+              "description": "Introduction to NoSQL, NoSQL Business Drivers.",
+              "importance": 2,
+              "difficulty": 1,
+              "examRelevance": 2,
+              "estimatedStudyMinutes": 30
+            },
+            {
+              "name": "Key-Value & Graph Stores",
+              "description": "NoSQL Data Architecture Patterns: Key-value stores, Graph stores.",
+              "importance": 2,
+              "difficulty": 2,
+              "examRelevance": 2,
+              "estimatedStudyMinutes": 30
+            },
+            {
+              "name": "Column Family (Bigtable) Stores",
+              "description": "Column family (Bigtable) stores.",
+              "importance": 2,
+              "difficulty": 2,
+              "examRelevance": 2,
+              "estimatedStudyMinutes": 30
+            },
+            {
+              "name": "Document Stores & NoSQL Case Study",
+              "description": "Document stores, Variations of NoSQL architectural patterns, NoSQL Case Study.",
+              "importance": 2,
+              "difficulty": 2,
+              "examRelevance": 2,
+              "estimatedStudyMinutes": 30
+            },
+            {
+              "name": "Shared-Nothing Architecture for Big Data",
+              "description": "Analyzing big data with a shared-nothing architecture.",
+              "importance": 2,
+              "difficulty": 2,
+              "examRelevance": 2,
+              "estimatedStudyMinutes": 30
+            },
+            {
+              "name": "Master-Slave vs Peer-to-Peer Distribution Models",
+              "description": "Choosing distribution models: master-slave versus peer-to-peer.",
+              "importance": 3,
+              "difficulty": 2,
+              "examRelevance": 3,
+              "estimatedStudyMinutes": 45
+            }
+          ]
+        },
+        {
+          "name": "Module 4: Mining Data Streams",
+          "hours": 11,
+          "concepts": [
+            {
+              "name": "Stream Data Model & Stream Queries",
+              "description": "A Data-Stream-Management System, Stream Sources, Stream Queries, Issues in Stream Processing.",
+              "importance": 2,
+              "difficulty": 2,
+              "examRelevance": 2,
+              "estimatedStudyMinutes": 30
+            },
+            {
+              "name": "Sampling Data Techniques in a Stream",
+              "description": "Sampling Data techniques in a Stream.",
+              "importance": 2,
+              "difficulty": 2,
+              "examRelevance": 2,
+              "estimatedStudyMinutes": 30
+            },
+            {
+              "name": "Bloom Filter",
+              "description": "Filtering Streams: Bloom Filter with Analysis.",
+              "importance": 3,
+              "difficulty": 3,
+              "examRelevance": 3,
+              "estimatedStudyMinutes": 60
+            },
+            {
+              "name": "Flajolet-Martin Algorithm",
+              "description": "Counting Distinct Elements in a Stream, Count-Distinct Problem, Flajolet-Martin Algorithm.",
+              "importance": 3,
+              "difficulty": 3,
+              "examRelevance": 3,
+              "estimatedStudyMinutes": 60
+            },
+            {
+              "name": "DGIM Algorithm",
+              "description": "Counting Ones in a Window: Datar-Gionis-Indyk-Motwani Algorithm.",
+              "importance": 3,
+              "difficulty": 3,
+              "examRelevance": 3,
+              "estimatedStudyMinutes": 75
+            },
+            {
+              "name": "Decaying Windows",
+              "description": "Decaying Windows concept in stream processing.",
+              "importance": 2,
+              "difficulty": 2,
+              "examRelevance": 2,
+              "estimatedStudyMinutes": 30
+            }
+          ]
+        },
+        {
+          "name": "Module 5: Real-Time Big Data Models",
+          "hours": 4,
+          "concepts": [
+            {
+              "name": "Content-Based Recommendations",
+              "description": "A Model for Recommendation Systems, Content-Based Recommendations.",
+              "importance": 3,
+              "difficulty": 2,
+              "examRelevance": 3,
+              "estimatedStudyMinutes": 30
+            },
+            {
+              "name": "Collaborative Filtering",
+              "description": "Collaborative Filtering for recommendations.",
+              "importance": 3,
+              "difficulty": 2,
+              "examRelevance": 3,
+              "estimatedStudyMinutes": 30
+            },
+            {
+              "name": "Social Networks as Graphs & Community Discovery",
+              "description": "Social Networks as Graphs, Clustering of Social-Network Graphs, Direct Discovery of Communities.",
+              "importance": 2,
+              "difficulty": 2,
+              "examRelevance": 2,
+              "estimatedStudyMinutes": 30
+            }
+          ]
+        },
+        {
+          "name": "Module 6: Data Analytics with R",
+          "hours": 4,
+          "concepts": [
+            {
+              "name": "R Basics & RStudio Environment",
+              "description": "Exploring Basic features of R, RGUI, RStudio, Variables, Vectors.",
+              "importance": 1,
+              "difficulty": 1,
+              "examRelevance": 1,
+              "estimatedStudyMinutes": 30
+            },
+            {
+              "name": "Data Manipulation & Functions in R",
+              "description": "Reading/exporting data, manipulating data, using functions in R.",
+              "importance": 1,
+              "difficulty": 1,
+              "examRelevance": 1,
+              "estimatedStudyMinutes": 20
+            },
+            {
+              "name": "Data Visualization in R",
+              "description": "Data Visualization: Types, Applications.",
+              "importance": 1,
+              "difficulty": 1,
+              "examRelevance": 1,
+              "estimatedStudyMinutes": 20
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "code": "CSDC7013",
+      "name": "Natural Language Processing",
+      "credits": 3,
+      "modules": [
+        {
+          "name": "Module 1: Introduction to NLP",
+          "hours": 3,
+          "concepts": [
+            {
+              "name": "Origin, History & Stages of NLP",
+              "description": "Origin & History of NLP; Stages in NLP.",
+              "importance": 1,
+              "difficulty": 1,
+              "examRelevance": 1,
+              "estimatedStudyMinutes": 25
+            },
+            {
+              "name": "Ambiguities in English & Indian Regional Languages",
+              "description": "Ambiguities and their types in English and Indian Regional Languages.",
+              "importance": 2,
+              "difficulty": 1,
+              "examRelevance": 2,
+              "estimatedStudyMinutes": 25
+            },
+            {
+              "name": "Challenges & Applications of NLP",
+              "description": "Challenges of NLP; Applications of NLP.",
+              "importance": 1,
+              "difficulty": 1,
+              "examRelevance": 1,
+              "estimatedStudyMinutes": 20
+            }
+          ]
+        },
+        {
+          "name": "Module 2: Word Level Analysis",
+          "hours": 9,
+          "concepts": [
+            {
+              "name": "Tokenization, Stemming & Lemmatization",
+              "description": "Basic Terms: Tokenization, Stemming, Lemmatization.",
+              "importance": 3,
+              "difficulty": 1,
+              "examRelevance": 3,
+              "estimatedStudyMinutes": 30
+            },
+            {
+              "name": "English Morphology (Inflectional & Derivational)",
+              "description": "Survey of English Morphology, Inflectional Morphology, Derivational Morphology.",
+              "importance": 2,
+              "difficulty": 2,
+              "examRelevance": 2,
+              "estimatedStudyMinutes": 30
+            },
+            {
+              "name": "Morphological Models: FST & Porter Stemmer",
+              "description": "Dictionary lookup, finite state morphology, Morphological parsing with FST, Porter Stemmer algorithm.",
+              "importance": 2,
+              "difficulty": 2,
+              "examRelevance": 2,
+              "estimatedStudyMinutes": 30
+            },
+            {
+              "name": "N-grams & Sensitivity to Training Corpus",
+              "description": "Grams and its variation: Bigram, Trigram; N-gram Sensitivity to the Training Corpus.",
+              "importance": 3,
+              "difficulty": 2,
+              "examRelevance": 3,
+              "estimatedStudyMinutes": 45
+            },
+            {
+              "name": "Unknown Words & Perplexity Evaluation",
+              "description": "Unknown Words: Open versus closed vocabulary tasks; Evaluating N-grams: Perplexity.",
+              "importance": 2,
+              "difficulty": 2,
+              "examRelevance": 2,
+              "estimatedStudyMinutes": 30
+            },
+            {
+              "name": "Smoothing: Laplace & Good-Turing Discounting",
+              "description": "Smoothing: Laplace Smoothing, Good-Turing Discounting.",
+              "importance": 3,
+              "difficulty": 3,
+              "examRelevance": 3,
+              "estimatedStudyMinutes": 45
+            }
+          ]
+        },
+        {
+          "name": "Module 3: Syntax Analysis",
+          "hours": 10,
+          "concepts": [
+            {
+              "name": "POS Tagging & Penn Treebank Tag Set",
+              "description": "Part-Of-Speech tagging(POS); Tag set for English (Upenn Treebank).",
+              "importance": 3,
+              "difficulty": 2,
+              "examRelevance": 3,
+              "estimatedStudyMinutes": 30
+            },
+            {
+              "name": "Rule-based, Stochastic & Transformation-based Tagging",
+              "description": "Difficulties/Challenges in POS tagging; Rule-based, Stochastic and Transformation-based tagging.",
+              "importance": 2,
+              "difficulty": 2,
+              "examRelevance": 2,
+              "estimatedStudyMinutes": 30
+            },
+            {
+              "name": "HMM (Viterbi Algorithm) for POS Tagging",
+              "description": "Generative Model: Hidden Markov Model (HMM Viterbi) for POS tagging.",
+              "importance": 3,
+              "difficulty": 3,
+              "examRelevance": 3,
+              "estimatedStudyMinutes": 60
+            },
+            {
+              "name": "Maximum Entropy Model & CRF",
+              "description": "Discriminative Model: Maximum Entropy model, Conditional random Field (CRF).",
+              "importance": 2,
+              "difficulty": 3,
+              "examRelevance": 2,
+              "estimatedStudyMinutes": 45
+            },
+            {
+              "name": "Top-down & Bottom-up Parsing",
+              "description": "Parsers: Top down and Bottom up; Modelling constituency.",
+              "importance": 2,
+              "difficulty": 2,
+              "examRelevance": 2,
+              "estimatedStudyMinutes": 30
+            },
+            {
+              "name": "CYK Parser & PCFG",
+              "description": "Bottom Up Parser: CYK, PCFG (Probabilistic Context Free Grammar).",
+              "importance": 3,
+              "difficulty": 3,
+              "examRelevance": 3,
+              "estimatedStudyMinutes": 45
+            },
+            {
+              "name": "Shift Reduce, Earley & Predictive Parsers",
+              "description": "Shift Reduce Parser; Top Down Parser: Early Parser, Predictive Parser.",
+              "importance": 2,
+              "difficulty": 3,
+              "examRelevance": 2,
+              "estimatedStudyMinutes": 45
+            }
+          ]
+        },
+        {
+          "name": "Module 4: Semantic Analysis",
+          "hours": 7,
+          "concepts": [
+            {
+              "name": "Meaning Representation & Lexical Semantics",
+              "description": "Introduction, meaning representation; Lexical Semantics; Corpus study.",
+              "importance": 2,
+              "difficulty": 2,
+              "examRelevance": 2,
+              "estimatedStudyMinutes": 30
+            },
+            {
+              "name": "WordNet & Babelnet",
+              "description": "Study of Various language dictionaries like WordNet, Babelnet.",
+              "importance": 2,
+              "difficulty": 1,
+              "examRelevance": 2,
+              "estimatedStudyMinutes": 30
+            },
+            {
+              "name": "Homonymy, Polysemy, Synonymy & Hyponymy",
+              "description": "Relations among lexemes & their senses; Semantic Ambiguity.",
+              "importance": 2,
+              "difficulty": 1,
+              "examRelevance": 2,
+              "estimatedStudyMinutes": 30
+            },
+            {
+              "name": "Word Sense Disambiguation: Lesk's Algorithm",
+              "description": "Word Sense Disambiguation (WSD); Knowledge based approach (Lesk's Algorithm).",
+              "importance": 3,
+              "difficulty": 3,
+              "examRelevance": 3,
+              "estimatedStudyMinutes": 45
+            },
+            {
+              "name": "WSD: Naive Bayes, Decision List, Yarowsky & Hyperlex",
+              "description": "Supervised (Naive Bayes, Decision List), Semi-supervised (Yarowsky), Unsupervised (Hyperlex).",
+              "importance": 2,
+              "difficulty": 3,
+              "examRelevance": 2,
+              "estimatedStudyMinutes": 45
+            }
+          ]
+        },
+        {
+          "name": "Module 5: Pragmatic & Discourse Processing",
+          "hours": 5,
+          "concepts": [
+            {
+              "name": "Reference Resolution & Reference Phenomena",
+              "description": "Discourse: Reference Resolution, Reference Phenomena, Syntactic & Semantic constraint on coherence.",
+              "importance": 2,
+              "difficulty": 2,
+              "examRelevance": 2,
+              "estimatedStudyMinutes": 30
+            },
+            {
+              "name": "Anaphora Resolution: Hobbs Algorithm",
+              "description": "Anaphora Resolution using Hobbs Algorithm.",
+              "importance": 2,
+              "difficulty": 3,
+              "examRelevance": 2,
+              "estimatedStudyMinutes": 45
+            },
+            {
+              "name": "Anaphora Resolution: Centering Algorithm",
+              "description": "Anaphora Resolution using Centering Algorithm.",
+              "importance": 2,
+              "difficulty": 3,
+              "examRelevance": 2,
+              "estimatedStudyMinutes": 45
+            }
+          ]
+        },
+        {
+          "name": "Module 6: Applications of NLP",
+          "hours": 5,
+          "concepts": [
+            {
+              "name": "Machine Translation & Text Summarization",
+              "description": "Case studies on Machine translation, Text Summarization.",
+              "importance": 2,
+              "difficulty": 2,
+              "examRelevance": 2,
+              "estimatedStudyMinutes": 30
+            },
+            {
+              "name": "Sentiment Analysis & Information Retrieval",
+              "description": "Case studies on Sentiment analysis, Information retrieval.",
+              "importance": 2,
+              "difficulty": 1,
+              "examRelevance": 2,
+              "estimatedStudyMinutes": 30
+            },
+            {
+              "name": "Question Answering Systems",
+              "description": "Case studies on Question Answering system.",
+              "importance": 2,
+              "difficulty": 2,
+              "examRelevance": 2,
+              "estimatedStudyMinutes": 30
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "code": "CSDC7022",
+      "name": "Blockchain",
+      "credits": 3,
+      "modules": [
+        {
+          "name": "Module 1: Introduction to Blockchain",
+          "hours": 6,
+          "concepts": [
+            {
+              "name": "What is Blockchain & Origin (Hash Functions)",
+              "description": "What is a blockchain, Origin of blockchain (cryptographically secure hash functions).",
+              "importance": 3,
+              "difficulty": 1,
+              "examRelevance": 3,
+              "estimatedStudyMinutes": 30
+            },
+            {
+              "name": "Merkle Trees",
+              "description": "Foundation of blockchain: Merkle trees.",
+              "importance": 3,
+              "difficulty": 2,
+              "examRelevance": 3,
+              "estimatedStudyMinutes": 30
+            },
+            {
+              "name": "Blockchain Components & Block Structure",
+              "description": "Components of blockchain, Block in blockchain.",
+              "importance": 3,
+              "difficulty": 2,
+              "examRelevance": 3,
+              "estimatedStudyMinutes": 30
+            },
+            {
+              "name": "Types: Public, Private & Consortium",
+              "description": "Types: Public, Private, and Consortium blockchains.",
+              "importance": 3,
+              "difficulty": 1,
+              "examRelevance": 3,
+              "estimatedStudyMinutes": 30
+            },
+            {
+              "name": "Consensus Protocol Overview",
+              "description": "Consensus Protocol overview.",
+              "importance": 2,
+              "difficulty": 2,
+              "examRelevance": 2,
+              "estimatedStudyMinutes": 30
+            },
+            {
+              "name": "Limitations & Challenges of Blockchain",
+              "description": "Limitations and Challenges of blockchain.",
+              "importance": 1,
+              "difficulty": 1,
+              "examRelevance": 1,
+              "estimatedStudyMinutes": 20
+            }
+          ]
+        },
+        {
+          "name": "Module 2: Cryptocurrency",
+          "hours": 6,
+          "concepts": [
+            {
+              "name": "Bitcoin, Altcoin & Tokens",
+              "description": "Cryptocurrency: Bitcoin, Altcoin, and Tokens (Utility and Security).",
+              "importance": 2,
+              "difficulty": 1,
+              "examRelevance": 2,
+              "estimatedStudyMinutes": 30
+            },
+            {
+              "name": "Hot & Cold Wallets, Cryptocurrency Usage",
+              "description": "Cryptocurrency wallets: Hot and cold wallets, Cryptocurrency usage.",
+              "importance": 1,
+              "difficulty": 1,
+              "examRelevance": 1,
+              "estimatedStudyMinutes": 25
+            },
+            {
+              "name": "Transactions, UTXO & Double Spending Problem",
+              "description": "Transactions in Blockchain, UTXO and double spending problem.",
+              "importance": 3,
+              "difficulty": 2,
+              "examRelevance": 3,
+              "estimatedStudyMinutes": 45
+            },
+            {
+              "name": "Proof-of-Work (PoW)",
+              "description": "Consensus in Bitcoin, Proof-of-Work (PoW).",
+              "importance": 3,
+              "difficulty": 2,
+              "examRelevance": 3,
+              "estimatedStudyMinutes": 30
+            },
+            {
+              "name": "Proof-of-Burn, Proof-of-Stake & Proof-of-Elapsed-Time",
+              "description": "Proof-of-Burn (PoB), Proof-of-Stake (PoS), and Proof-of-Elapsed Time (PoET).",
+              "importance": 2,
+              "difficulty": 2,
+              "examRelevance": 2,
+              "estimatedStudyMinutes": 30
+            },
+            {
+              "name": "Mining, Mining Difficulty & Mining Pools",
+              "description": "Life of a miner, Mining difficulty, Mining pool and its methods.",
+              "importance": 2,
+              "difficulty": 2,
+              "examRelevance": 2,
+              "estimatedStudyMinutes": 30
+            }
+          ]
+        },
+        {
+          "name": "Module 3: Programming for Blockchain",
+          "hours": 8,
+          "concepts": [
+            {
+              "name": "Smart Contracts: Types & Structure",
+              "description": "Introduction to Smart Contracts, Types of Smart Contracts, Structure of a Smart Contract.",
+              "importance": 2,
+              "difficulty": 1,
+              "examRelevance": 2,
+              "estimatedStudyMinutes": 30
+            },
+            {
+              "name": "Smart Contract Approaches & Limitations",
+              "description": "Smart Contract Approaches, Limitations of Smart Contracts.",
+              "importance": 1,
+              "difficulty": 1,
+              "examRelevance": 1,
+              "estimatedStudyMinutes": 20
+            },
+            {
+              "name": "Solidity Basics: Functions & Visibility Qualifiers",
+              "description": "Solidity Programming: Basics, functions, Visibility and Activity Qualifiers.",
+              "importance": 3,
+              "difficulty": 2,
+              "examRelevance": 3,
+              "estimatedStudyMinutes": 45
+            },
+            {
+              "name": "Solidity: Address, Bytes, Enums & Arrays",
+              "description": "Address and Address Payable, Bytes and Enums, Arrays-Fixed and Dynamic Arrays.",
+              "importance": 2,
+              "difficulty": 2,
+              "examRelevance": 2,
+              "estimatedStudyMinutes": 45
+            },
+            {
+              "name": "Solidity: Struct, Mapping & Inheritance",
+              "description": "Struct, Mapping, Inheritance in Solidity.",
+              "importance": 3,
+              "difficulty": 3,
+              "examRelevance": 3,
+              "estimatedStudyMinutes": 45
+            },
+            {
+              "name": "Solidity: Error Handling",
+              "description": "Error handling in Solidity.",
+              "importance": 2,
+              "difficulty": 2,
+              "examRelevance": 2,
+              "estimatedStudyMinutes": 30
+            },
+            {
+              "name": "Case Study: Voting Contract App",
+              "description": "Case Study - Voting Contract App, Preparing for smart contract development.",
+              "importance": 2,
+              "difficulty": 2,
+              "examRelevance": 2,
+              "estimatedStudyMinutes": 45
+            }
+          ]
+        },
+        {
+          "name": "Module 4: Public Blockchain",
+          "hours": 8,
+          "concepts": [
+            {
+              "name": "Ethereum & Its Components",
+              "description": "Introduction to Public Blockchain, Ethereum and its Components.",
+              "importance": 3,
+              "difficulty": 2,
+              "examRelevance": 3,
+              "estimatedStudyMinutes": 30
+            },
+            {
+              "name": "Ethereum Virtual Machine (EVM)",
+              "description": "Mining in Ethereum, Ethereum Virtual Machine (EVM).",
+              "importance": 3,
+              "difficulty": 2,
+              "examRelevance": 3,
+              "estimatedStudyMinutes": 30
+            },
+            {
+              "name": "Ethereum Transactions, Accounts & Architecture",
+              "description": "Transaction, Accounts, Architecture and Workflow.",
+              "importance": 2,
+              "difficulty": 2,
+              "examRelevance": 2,
+              "estimatedStudyMinutes": 30
+            },
+            {
+              "name": "Bitcoin vs Ethereum Comparison",
+              "description": "Comparison between Bitcoin and Ethereum.",
+              "importance": 2,
+              "difficulty": 1,
+              "examRelevance": 2,
+              "estimatedStudyMinutes": 30
+            },
+            {
+              "name": "Ethereum Test-Networks, Metamask & Mist Wallet",
+              "description": "Types of test-networks used in Ethereum, Transferring Ethers using Metamask, Mist Wallet.",
+              "importance": 1,
+              "difficulty": 2,
+              "examRelevance": 1,
+              "estimatedStudyMinutes": 30
+            },
+            {
+              "name": "Ganache & Etherscan.io Case Study",
+              "description": "Case study of Ganache for Ethereum blockchain, Exploring etherscan.io.",
+              "importance": 1,
+              "difficulty": 1,
+              "examRelevance": 1,
+              "estimatedStudyMinutes": 30
+            }
+          ]
+        },
+        {
+          "name": "Module 5: Private Blockchain",
+          "hours": 8,
+          "concepts": [
+            {
+              "name": "Private Blockchain: Need & Key Characteristics",
+              "description": "Introduction, Key characteristics, Need of Private Blockchain.",
+              "importance": 2,
+              "difficulty": 1,
+              "examRelevance": 2,
+              "estimatedStudyMinutes": 30
+            },
+            {
+              "name": "State Machine Replication",
+              "description": "Smart Contract in a Private Environment, State Machine Replication.",
+              "importance": 2,
+              "difficulty": 2,
+              "examRelevance": 2,
+              "estimatedStudyMinutes": 30
+            },
+            {
+              "name": "Consensus Algorithms: PAXOS & RAFT",
+              "description": "Consensus Algorithms for Private Blockchain - PAXOS and RAFT.",
+              "importance": 3,
+              "difficulty": 3,
+              "examRelevance": 3,
+              "estimatedStudyMinutes": 45
+            },
+            {
+              "name": "Byzantine Fault Tolerance (BFT & PBFT)",
+              "description": "Byzantine Faults: Byzantine Fault Tolerant (BFT) and Practical BFT.",
+              "importance": 3,
+              "difficulty": 3,
+              "examRelevance": 3,
+              "estimatedStudyMinutes": 45
+            },
+            {
+              "name": "Introduction to Hyperledger & Frameworks",
+              "description": "Introduction to Hyperledger, Tools and Frameworks, Hyperledger Fabric.",
+              "importance": 2,
+              "difficulty": 1,
+              "examRelevance": 2,
+              "estimatedStudyMinutes": 30
+            },
+            {
+              "name": "Hyperledger Fabric Architecture & Components",
+              "description": "Hyperledger Fabric Architecture, Components: MSP, Chain Codes.",
+              "importance": 3,
+              "difficulty": 2,
+              "examRelevance": 3,
+              "estimatedStudyMinutes": 45
+            },
+            {
+              "name": "Hyperledger Transaction Flow & Supply Chain Case Study",
+              "description": "Transaction Flow, Creating Hyperledger Network, Case Study of Supply Chain Management.",
+              "importance": 2,
+              "difficulty": 2,
+              "examRelevance": 2,
+              "estimatedStudyMinutes": 30
+            }
+          ]
+        },
+        {
+          "name": "Module 6: Tools and Applications of Blockchain",
+          "hours": 3,
+          "concepts": [
+            {
+              "name": "Corda, Ripple & Quorum Platforms",
+              "description": "Corda, Ripple, Quorum and other Emerging Blockchain Platforms.",
+              "importance": 1,
+              "difficulty": 1,
+              "examRelevance": 1,
+              "estimatedStudyMinutes": 25
+            },
+            {
+              "name": "Blockchain in DeFi Case Study",
+              "description": "Blockchain in DeFi: Case Study on any of the Blockchain Platforms.",
+              "importance": 1,
+              "difficulty": 1,
+              "examRelevance": 1,
+              "estimatedStudyMinutes": 20
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "note_for_agent": "This seed covers all four of the student's actual Semester VII subjects (CSC701 Machine Learning, CSC702 Big Data Analytics, CSDC7013 Natural Language Processing, CSDC7022 Blockchain) at fine-grained, single-concept-per-topic granularity extracted directly from the Mumbai University syllabus PDF. Every concept name and description traces to real syllabus text. Do NOT further merge or split these concepts, and do NOT add concepts for any other subject not listed here."
+}

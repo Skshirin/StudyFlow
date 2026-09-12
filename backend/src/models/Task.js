@@ -20,6 +20,11 @@ const taskSchema = new mongoose.Schema({
     enum: ['pending', 'completed', 'missed', 'skipped'],
     default: 'pending'
   },
+  conceptId: { type: mongoose.Schema.Types.ObjectId, ref: 'Concept', default: null },
+  moduleId: { type: mongoose.Schema.Types.ObjectId, ref: 'Module', default: null },
+  importance: { type: Number, default: null },
+  examRelevance: { type: Number, default: null },
+  difficulty: { type: Number, default: null },
   reason: { type: String, default: '' } // deterministic "why today?" explanation, no AI needed
 }, { timestamps: true });
 
